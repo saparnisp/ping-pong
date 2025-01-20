@@ -56,9 +56,10 @@ class SocketHandler {
 
     // Game start
     this.socket.on("gameStart", () => {
-      if (navigator?.vibrate) {
-        navigator.vibrate([200]);
+      if (window.navigator.userAgentData.mobile) {
+        window.navigator.vibrate([100]);
       }
+
       this.controls.setPlaying(true);
       this.display.hideWaitingScreen();
       this.display.showGameElements();
