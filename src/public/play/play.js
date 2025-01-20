@@ -43,9 +43,10 @@ document.addEventListener("DOMContentLoaded", () => {
     );
     const controls = new GameControls(socket);
     controls.setupControlEvents();
-    const socketHandler = new SocketHandler(display, controls, socket); // Pass both display and controls
+    new SocketHandler(display, controls, socket);
 
     const canvas = document.getElementById("gameBoard");
+
     canvas.width = config.SCREEN_SIZE.cols * config.DEFAULT_BLOCK_SIZE;
     canvas.height = config.SCREEN_SIZE.rows * config.DEFAULT_BLOCK_SIZE;
     canvas?.focus();
