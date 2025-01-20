@@ -56,7 +56,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  const socket = io(`/display_${id}`);
+  const socket = io(`/display_${id}`, {
+    transports: ["websocket", "polling"],
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    timeout: 10000,
+  });
   const canvas = document.getElementById("tetrisCanvas");
   const ctx = canvas.getContext("2d");
 

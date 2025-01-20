@@ -1,9 +1,9 @@
-import express from "npm:express";
-import path from "node:path";
-import compression from "npm:compression";
-import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
-import { exec } from "node:child_process";
+import express from "express";
+import path from "path";
+import compression from "compression";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import { exec } from "child_process";
 
 import { loadScores } from "./game/scores.js";
 
@@ -19,10 +19,6 @@ const getPath = (name) => path.join(__dirname, "..", ...name);
 
 // Middleware
 app.use(express.static(getPath(["public"])));
-app.use(
-  "/nosleep",
-  express.static(getPath(["..", "/node_modules/nosleep.js/dist/"]))
-);
 
 app.use(compression());
 
@@ -104,4 +100,4 @@ async function start() {
   console.log(`Port ${PORT} is ready`);
 }
 
-export { app, PORT, start };
+export { app, start };

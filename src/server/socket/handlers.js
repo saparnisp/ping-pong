@@ -230,6 +230,10 @@ function handleGameAction(socket, { action }) {
   }
 }
 
+function handleLeaveGame(socket) {
+  cleanupPlayer(socket, socket.nsp.name.split("_")[1]);
+}
+
 function handleReconnect(socket) {
   const id = socket.nsp.name.split("_")[1];
   const nsp = io.of(`/display_${id}`);
@@ -307,6 +311,7 @@ export {
   handleGameAction,
   handleDisconnect,
   handleReconnect,
+  handleLeaveGame,
   handleLandingStats,
   clearDropInterval,
 };

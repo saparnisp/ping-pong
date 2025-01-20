@@ -9,12 +9,14 @@ import {
   handleGameAction,
   handleDisconnect,
   handleReconnect,
+  handleLeaveGame,
   clearDropInterval,
   handleLandingStats,
 } from "./server/socket/handlers.js";
 
 // Create HTTP server
 const server = http.createServer(app);
+const PORT = process.env.PORT || 3000;
 
 const io = new Server(server, {
   connectionStateRecovery: {
@@ -68,8 +70,8 @@ namespace.on("connection", (socket) => {
   if (socket.recovered) {
     handleReconnect(socket);
     setupHandler("gameUpdate", handleGameAction);
-
-    // recovery was successful: socket.id, socket.rooms and socket.data were restored
+    setupHandler("leave", handleLeaveGame);
+    setupHandler("disconnect", handleDisconnect);
   } else {
     // Handle socket errors
     socket.on("error", (error) => {
@@ -78,6 +80,7 @@ namespace.on("connection", (socket) => {
 
     setupHandler("displayConnect", handleDisplayConnect);
     setupHandler("controlsConnect", handleControlsConnect);
+    setupHandler("leave", handleLeaveGame);
     setupHandler("gameUpdate", handleGameAction);
     setupHandler("disconnect", handleDisconnect);
   }
@@ -93,6 +96,8 @@ function gracefulShutdown(signal) {
   console.log(`${signal} received. Shutting down gracefully...`);
   clearDropInterval(null, true);
 
+  io.close();
+
   server.close(() => {
     console.log("Server closed");
     process.exit(0);
@@ -101,8 +106,6 @@ function gracefulShutdown(signal) {
 
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
-
-const PORT = process.env.PORT || 3000;
 
 // Start server
 (async () => {

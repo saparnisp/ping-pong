@@ -111,6 +111,7 @@ class SocketHandler {
 
     // Handle start button click
     document.getElementById("start-button")?.addEventListener("click", () => {
+      // TODO: Nobody is listening to this event
       this.socket.emit("startGame");
     });
 
@@ -120,7 +121,7 @@ class SocketHandler {
       localStorage.removeItem("lastGameData");
 
       // Notify server of disconnection
-      this.socket.emit("forceDisconnect");
+      this.socket.emit("leave");
 
       // Disconnect socket
       this.socket.disconnect();

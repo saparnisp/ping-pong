@@ -28,7 +28,13 @@ function toggleLanguage() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const socket = io();
+  const socket = io({
+    transports: ["websocket", "polling"],
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    timeout: 10000,
+  });
 
   // Initialize particles on load
   createParticles();
