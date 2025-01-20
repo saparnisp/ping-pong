@@ -1,0 +1,236 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", Arial, sans-serif;
+  background: radial-gradient(circle at center, #0a0a2a 0%, #000 100%);
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow-x: hidden;
+}
+
+#language-switcher {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 24px;
+  background-color: rgba(0, 243, 255, 0.15);
+  border: 2px solid #00f3ff;
+  border-radius: 30px;
+  color: #00f3ff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  font-size: 1rem;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  letter-spacing: 1px;
+}
+
+#language-switcher:hover {
+  background-color: rgba(0, 243, 255, 0.25);
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+}
+
+.content-wrapper {
+  max-width: 800px;
+  width: 90%;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  position: relative;
+  z-index: 10;
+  margin: 40px auto;
+}
+
+h1 {
+  font-size: 3.5rem;
+  margin: 0;
+  color: #fff;
+  text-shadow: 0 0 10px #00f, 0 0 20px #00f;
+  animation: glow 2s ease-in-out infinite alternate;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 2px;
+}
+
+h2 {
+  font-size: 2rem;
+  margin: 0;
+  color: #00f3ff;
+  text-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.instruction {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #fff;
+  opacity: 0.9;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+#button-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 500px;
+  margin: 20px auto 0;
+  padding: 0;
+}
+
+.menu-button {
+  position: relative;
+  background-color: rgba(0, 243, 255, 0.1);
+  color: #00f3ff;
+  border: 2px solid #00f3ff;
+  padding: 20px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  min-width: 100px;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+  font-weight: 600;
+}
+
+.menu-stats {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  white-space: nowrap;
+  text-align: center;
+  bottom: 12px;
+  color: #00f3ff;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.menu-button:hover {
+  background-color: rgba(0, 243, 255, 0.2);
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 10px #00f, 0 0 20px #00f, 0 0 30px #00f;
+  }
+  to {
+    text-shadow: 0 0 20px #00f, 0 0 30px #00f, 0 0 40px #00f, 0 0 50px #00f;
+  }
+}
+
+/* Background Animation */
+.background-effects {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.light-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #00f3ff;
+  border-radius: 50%;
+  animation: float 6s infinite;
+  opacity: 0.3;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(50px);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2.8rem;
+  }
+
+  h2 {
+    font-size: 1.8rem;
+  }
+
+  .instruction {
+    font-size: 1.1rem;
+  }
+
+  #button-grid {
+    gap: 1.2rem;
+    max-width: 400px;
+  }
+
+  .menu-button {
+    padding: 15px;
+    font-size: 1.1rem;
+    border-radius: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 2.2rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .instruction {
+    font-size: 1rem;
+  }
+
+  #button-grid {
+    gap: 1rem;
+  }
+
+  .menu-button {
+    padding: 12px;
+    font-size: 1rem;
+    min-width: 80px;
+  }
+
+  .content-wrapper {
+    gap: 2rem;
+    padding: 30px 15px;
+  }
+}

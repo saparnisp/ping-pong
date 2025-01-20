@@ -1,0 +1,40 @@
+{
+  "name": "tetris-multiplayer",
+  "version": "1.0.0",
+  "description": "Multiplayer Tetris game",
+  "main": "src/server/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon"
+  },
+  "engines": {
+    "node": "18.18.0"
+  },
+  "dependencies": {
+    "compression": "^1.7.4",
+    "express": "^4.17.1",
+    "nosleep.js": "^0.12.0",
+    "socket.io": "^4.7.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  },
+  "nodemonConfig": {
+    "verbose": true,
+    "execMap": {
+      "js": "node src/index.js"
+    },
+    "ignore": [
+      "*.test.js",
+      "**/fixtures/**"
+    ],
+    "watch": [
+      "src/"
+    ],
+    "env": {
+      "NODE_ENV": "development"
+    },
+    "ext": "js,json,html,css"
+  }
+}

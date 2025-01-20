@@ -1,0 +1,16 @@
+# Node
+node_modules/
+.env
+
+# OS
+.DS_Store
+
+# Logs
+npm-debug.log
+*.log
+
+# IDE
+.vscode/
+
+# App
+scores.json

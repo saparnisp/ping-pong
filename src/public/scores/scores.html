@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="lt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tetris - Geriausi Rezultatai</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="scores-page">
+    <div class="scores-container">
+      <h1>Tetris</h1>
+      <div class="high-scores">
+        <h2>Geriausi Rezultatai</h2>
+        <div class="scores-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Vieta</th>
+                <th>Taškai</th>
+                <th>Linijos</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+            <tbody id="scores-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="navigation">
+        <a href="/" class="nav-button">Grįžti į pradžią</a>
+      </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/scores.js"></script>
+  </body>
+</html>

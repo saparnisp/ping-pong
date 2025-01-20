@@ -1,0 +1,33 @@
+body {
+  margin: 0;
+  padding: 0;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+}
+canvas {
+  border: 2px solid #333;
+  background: #111;
+}
+
+.blinking {
+  animation: blinker 1s linear infinite alternate;
+}
+
+@keyframes blinker {
+  0% {
+    background-color: #111;
+    border: 2px solid #333;
+  }
+  50.0% {
+    background-color: #111;
+    border: 2px solid #644;
+  }
+  100.0% {
+    background-color: #000;
+    border: 2px solid #933;
+  }
+}

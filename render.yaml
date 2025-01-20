@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: tetris-multiplayer
+    env: node
+    buildCommand: npm install --production
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    plan: free

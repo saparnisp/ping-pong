@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blokeliai</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="gameOverScreen" style="display: none;" class="modal">
+        <div class="modal-content">
+            <h2>Žaidimas baigtas!</h2>
+            <p>Taškai: <span id="finalScore">0</span></p>
+            <p>Eilutės: <span id="finalLines">0</span></p>
+            <p>Lygis: <span id="finalLevel">0</span></p>
+            <button id="closeButton" class="menu-button">Gerai</button>
+        </div>
+    </div>
+
+    <div class="main-menu">
+        <h1>Blokeliai</h1>
+        <div class="menu-buttons">
+            <button id="startGame" class="menu-button">Pradėti žaidimą</button>
+            <button id="viewScores" class="menu-button">Rezultatai</button>
+        </div>
+    </div>
+
+    <script>
+        // Check for game results when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            const lastGameData = localStorage.getItem('lastGameData');
+            if (lastGameData) {
+                const data = JSON.parse(lastGameData);
+                document.getElementById('finalScore').textContent = data.score;
+                document.getElementById('finalLines').textContent = data.lines;
+                document.getElementById('finalLevel').textContent = data.level;
+                document.getElementById('gameOverScreen').style.display = 'flex';
+                // Clear the data after showing it
+                localStorage.removeItem('lastGameData');
+            }
+        });
+
+        document.getElementById('startGame').addEventListener('click', function() {
+            window.location.href = '/play';
+        });
+        
+        document.getElementById('viewScores').addEventListener('click', function() {
+            window.location.href = '/scores';
+        });
+
+        document.getElementById('closeButton').addEventListener('click', function() {
+            document.getElementById('gameOverScreen').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
