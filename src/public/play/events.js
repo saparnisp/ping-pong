@@ -90,10 +90,14 @@ class SocketHandler {
           })
         );
 
+        document
+          .getElementById("gameOverScreen")
+          ?.style.setProperty("display", "flex");
+
         // Use setTimeout to ensure game state is saved before redirect
         setTimeout(() => {
-          window.location.assign("/");
-        }, 100);
+          window.location.href = "/";
+        }, 5000);
       }
     });
 

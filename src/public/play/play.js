@@ -11,7 +11,7 @@ const getId = () => {
 
 document.addEventListener("DOMContentLoaded", () => {
   const id = getId();
-
+  document.getElementById("screen-id").innerHTML = id;
   if (!id) {
     // TODO: Ask server for the next id?
     console.error("No display ID found in URL!");

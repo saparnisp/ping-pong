@@ -38,9 +38,14 @@ body {
   text-align: center;
 }
 
-#waiting-screen h2 {
+#waiting-screen h3 {
   font-size: 1.5em;
   margin-bottom: 20px;
+}
+
+#waiting-screen h1 {
+  font-size: 3em;
+  margin-bottom: 4px;
 }
 
 #waiting-screen p {
@@ -242,6 +247,14 @@ canvas.next-piece {
   padding: 20px;
   border-radius: 8px;
   border: 1px solid #444;
+}
+
+.modal-content p {
+  margin-bottom: 8px;
+}
+
+.modal-content h2 {
+  margin-bottom: 16px;
 }
 
 .menu-button {

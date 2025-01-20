@@ -1,18 +1,10 @@
-let COLORS = {
-  0: "#111", // Empty cell
-  1: "#00f0f0", // I piece (cyan)
-  2: "#0000f0", // J piece (blue)
-  3: "#f0a000", // L piece (orange)
-  4: "#f0f000", // O piece (yellow)
-  5: "#00f000", // S piece (green)
-  6: "#f00000", // Z piece (red)
-  7: "#a000f0", // T piece (purple)
-};
-let DEFAULT_BLOCK_SIZE = 30;
-let SCREEN_SIZE = { rows: 35, cols: 10 };
+// var noSleep = new NoSleep();
+// noSleep.enable();
 
+let COLORS;
+let SCREEN_SIZE;
+let block_size;
 const storedBlockSize = parseInt(localStorage.getItem("block_size"));
-let block_size = storedBlockSize || DEFAULT_BLOCK_SIZE;
 
 if (!isNaN(storedBlockSize)) {
   block_size = storedBlockSize;
@@ -53,9 +45,9 @@ const handleKeyup = (event) => {
   }
 };
 
-document.addEventListener("keyup", handleKeyup);
-
 document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("keyup", handleKeyup);
+
   const id = getId();
 
   if (!id) {
@@ -152,8 +144,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   socket.on("gameConfig", (config) => {
+    const canvas = document.getElementById("tetrisCanvas");
+
     COLORS = config.COLORS;
-    DEFAULT_BLOCK_SIZE = config.DEFAULT_BLOCK_SIZE;
+    block_size = config.DEFAULT_BLOCK_SIZE;
     SCREEN_SIZE = config.SCREEN_SIZE;
     canvas.width = SCREEN_SIZE.cols * block_size;
     canvas.height = SCREEN_SIZE.rows * block_size;
