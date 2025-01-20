@@ -34,7 +34,7 @@ pm2 restart server
 # Update system and install dependencies
 ssh root@92.112.180.232 "apt update && apt upgrade -y && \
 curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-apt-get install -y nodejs nginx"
+apt-get install -y nodejs nginx certbot python3-certbot-nginx"
 
 # Create application directory
 ssh root@92.112.180.232 "mkdir -p /var/www/blokeliai"
@@ -63,7 +63,6 @@ chmod -R 755 /var/www/blokeliai"
 # Install and configure PM2
 ssh root@92.112.180.232 "npm install -g pm2 && \
 cd /var/www/blokeliai && \
-echo 'import \"./src/index.js\";' > server.js && \
 NODE_ENV=production pm2 start server.js && \
 pm2 save && \
 pm2 startup"
@@ -73,21 +72,7 @@ pm2 startup"
 
 ```bash
 # Create Nginx configuration
-ssh root@92.112.180.232 "cat > /etc/nginx/sites-available/blokeliai << 'EOL'
-server {
-    listen 80;
-    server_name 92.112.180.232 www.blokeliai.site blokeliai.site;
-
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_cache_bypass \$http_upgrade;
-    }
-}
-EOL"
+ssh root@92.112.180.232 "yes | cp -rf /var/www/blokeliai/config/blokeliai /etc/nginx/sites-available/blokeliai"
 
 # Enable site and restart Nginx
 ssh root@92.112.180.232 "ln -sf /etc/nginx/sites-available/blokeliai /etc/nginx/sites-enabled/ && \

@@ -1,4 +1,4 @@
-import http from "http";
+import http from "node:http";
 import { Server } from "socket.io";
 import { app, start } from "./server/host.js";
 import { loadScores } from "./server/game/scores.js";

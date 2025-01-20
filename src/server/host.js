@@ -1,9 +1,9 @@
-import express from "express";
-import path from "path";
-import compression from "compression";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
-import { exec } from "child_process";
+import express from "npm:express";
+import path from "node:path";
+import compression from "npm:compression";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+import { exec } from "node:child_process";
 
 import { loadScores } from "./game/scores.js";
 
