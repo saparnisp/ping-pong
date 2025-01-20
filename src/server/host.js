@@ -31,6 +31,10 @@ app.get("/play", (_, res) => {
   res.sendFile(getPath(["public", "play", "play.html"]));
 });
 
+// app.get("/test", (_, res) => {
+//   res.sendFile(getPath(["public", "test", "index.html"]));
+// });
+
 app.get("/display", (_, res) => {
   res.sendFile(getPath(["public", "display", "display.html"]));
 });
