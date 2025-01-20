@@ -1,200 +1,180 @@
 # Blokeliai - Multiplayer Game Deployment Guide
 
-## Deployment to Hostinger VPS
-
-### Prerequisites
-- Ubuntu VPS server (tested on Ubuntu 24.04)
-- SSH access to your server
-- Domain name (required for SSL)
-
-### Step by Step Deployment
-
-1. **Connect to Your Server**
+## Quick Deployment
+Quick steps for subsequent deployments:
 ```bash
-ssh root@your-server-ip
-```
-
-2. **Update System and Install Dependencies**
-```bash
-# Update package list and upgrade existing packages
-apt update && apt upgrade -y
-
-# Install Node.js 18
-curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-apt-get install -y nodejs
-
-# Install Nginx
-apt-get install -y nginx
-```
-
-3. **Create Application Directory**
-```bash
-mkdir -p /var/www/blokeliai
-cd /var/www/blokeliai
-```
-
-4. **Upload Application Files**
-From your local machine:
-```bash
-# Create deployment archive (exclude node_modules and .git)
+# 1. Create and upload deployment archive
 tar -czf deploy.tar.gz --exclude='node_modules' --exclude='.git' .
+scp deploy.tar.gz root@92.112.180.232:/var/www/blokeliai/
 
-# Upload to server
-scp deploy.tar.gz root@your-server-ip:/var/www/blokeliai/
-```
+# 2. SSH into server and deploy
+ssh root@92.112.180.232
 
-5. **Extract and Setup Application**
-On the server:
-```bash
+# 3. Extract and restart
 cd /var/www/blokeliai
 tar -xzf deploy.tar.gz
 npm install --production
-
-# Set proper permissions
-chown -R root:root /var/www/blokeliai
-chmod -R 755 /var/www/blokeliai
+pm2 restart server
 ```
 
-6. **Install and Configure PM2**
+## Initial Server Setup (First Time Only)
+
+### 1. Prerequisites
+- Ubuntu VPS server (tested on Ubuntu 24.04)
+- SSH access to your server
+- Server IP: 92.112.180.232
+- Node.js version 18.18.0
+
+### 2. Initial Server Setup
 ```bash
-# Install PM2 globally
-npm install -g pm2
+# Update system and install dependencies
+ssh root@92.112.180.232 "apt update && apt upgrade -y && \
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+apt-get install -y nodejs nginx"
 
-# Start application with PM2
-pm2 start server.js
-pm2 save
-pm2 startup
+# Create application directory
+ssh root@92.112.180.232 "mkdir -p /var/www/blokeliai"
 ```
 
-7. **Configure Nginx**
-Create Nginx configuration file:
+### 3. Application Files Setup
 ```bash
-nano /etc/nginx/sites-available/blokeliai
+# Create deployment archive
+tar -czf deploy.tar.gz --exclude='node_modules' --exclude='.git' .
+
+# Upload to server
+scp deploy.tar.gz root@92.112.180.232:/var/www/blokeliai/
+
+# Extract and install dependencies
+ssh root@92.112.180.232 "cd /var/www/blokeliai && \
+tar -xzf deploy.tar.gz && \
+npm install --production && \
+chown -R root:root /var/www/blokeliai && \
+chmod -R 755 /var/www/blokeliai"
 ```
 
-Add this configuration:
-```nginx
+### 4. PM2 Setup
+```bash
+# Install and configure PM2
+ssh root@92.112.180.232 "npm install -g pm2 && \
+cd /var/www/blokeliai && \
+echo 'import \"./src/index.js\";' > server.js && \
+NODE_ENV=production pm2 start server.js && \
+pm2 save && \
+pm2 startup"
+```
+
+### 5. Nginx Configuration
+```bash
+# Create Nginx configuration
+ssh root@92.112.180.232 "cat > /etc/nginx/sites-available/blokeliai << 'EOL'
 server {
     listen 80;
-    server_name your-domain-or-ip;
+    server_name 92.112.180.232;
 
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
     }
 }
+EOL"
+
+# Enable site and restart Nginx
+ssh root@92.112.180.232 "ln -sf /etc/nginx/sites-available/blokeliai /etc/nginx/sites-enabled/ && \
+rm -f /etc/nginx/sites-enabled/default && \
+nginx -t && \
+systemctl restart nginx"
 ```
 
-8. **Enable Nginx Configuration**
+## File Structure
+Important application files:
+```
+/var/www/blokeliai/
+├── src/
+│   ├── index.js         # Main application entry
+│   ├── server/
+│   │   ├── host.js      # Express server setup
+│   │   ├── game/        # Game logic
+│   │   └── socket/      # WebSocket handlers
+│   └── public/          # Static files
+├── server.js            # PM2 entry point
+└── package.json         # Dependencies
+```
+
+## Managing the Application
+
+### View Application Status
 ```bash
-# Create symlink
-ln -s /etc/nginx/sites-available/blokeliai /etc/nginx/sites-enabled/
-
-# Remove default config (optional)
-rm -f /etc/nginx/sites-enabled/default
-
-# Test Nginx configuration
-nginx -t
-
-# Restart Nginx
-systemctl restart nginx
+ssh root@92.112.180.232 "pm2 list"
 ```
 
-### SSL Setup (Requires Domain Name)
-
-> Note: Free SSL certificates from Let's Encrypt cannot be issued for IP addresses. You need a domain name.
-
-Once you have a domain name pointing to your server:
-
-1. **Install Certbot**
+### View Application Logs
 ```bash
-apt install -y certbot python3-certbot-nginx
+ssh root@92.112.180.232 "pm2 logs server"
 ```
 
-2. **Get SSL Certificate**
+### Restart Application
 ```bash
-certbot --nginx -d your-domain.com --non-interactive --agree-tos --email your-email@example.com
+ssh root@92.112.180.232 "pm2 restart server"
 ```
 
-This will:
-- Obtain SSL certificate
-- Configure Nginx automatically
-- Set up auto-renewal
-- Redirect HTTP to HTTPS
-
-3. **Verify Auto-Renewal**
+### View Nginx Status
 ```bash
-systemctl status certbot.timer
+ssh root@92.112.180.232 "systemctl status nginx"
 ```
 
-### Managing Your Application
+## Troubleshooting
 
-#### View Application Status
+### 1. If the application fails to start:
 ```bash
-pm2 list
+# Check PM2 logs
+ssh root@92.112.180.232 "pm2 logs server"
+
+# Verify port availability
+ssh root@92.112.180.232 "netstat -tlpn | grep 3000"
+
+# Check Node.js version
+ssh root@92.112.180.232 "node --version"
 ```
 
-#### View Application Logs
+### 2. If Nginx returns 502 Bad Gateway:
 ```bash
-pm2 logs server
+# Check if Node.js app is running
+ssh root@92.112.180.232 "pm2 list"
+
+# Check Nginx config
+ssh root@92.112.180.232 "nginx -t"
+
+# Check Nginx logs
+ssh root@92.112.180.232 "tail -f /var/log/nginx/error.log"
 ```
 
-#### Restart Application
+### 3. Permission Issues:
 ```bash
-pm2 restart server
+ssh root@92.112.180.232 "chown -R root:root /var/www/blokeliai && \
+chmod -R 755 /var/www/blokeliai"
 ```
 
-#### View Nginx Status
+## Adding SSL (When You Have a Domain)
+
+1. Register a domain and point it to 92.112.180.232
+2. Install Certbot:
 ```bash
-systemctl status nginx
+ssh root@92.112.180.232 "apt install -y certbot python3-certbot-nginx"
 ```
 
-### Troubleshooting
-
-1. **If the application fails to start:**
-   - Check logs: `pm2 logs server`
-   - Verify port availability: `netstat -tlpn | grep 3000`
-   - Check Node.js version: `node --version`
-
-2. **If Nginx returns 502 Bad Gateway:**
-   - Check if Node.js application is running: `pm2 list`
-   - Verify Nginx configuration: `nginx -t`
-   - Check Nginx error logs: `cat /var/log/nginx/error.log`
-
-3. **Permission Issues:**
-   ```bash
-   chown -R root:root /var/www/blokeliai
-   chmod -R 755 /var/www/blokeliai
-   ```
-
-4. **SSL Issues:**
-   - Make sure domain DNS is properly configured
-   - Check Certbot logs: `journalctl -u certbot.service`
-   - Verify certificate: `certbot certificates`
-
-### Updating the Application
-
-To update your application with new changes:
-
-1. Create new deployment archive locally:
+3. Get SSL certificate (replace your-domain.com):
 ```bash
-tar -czf deploy.tar.gz --exclude='node_modules' --exclude='.git' .
+ssh root@92.112.180.232 "certbot --nginx -d your-domain.com --non-interactive --agree-tos --email your-email@example.com"
 ```
 
-2. Upload and deploy:
-```bash
-# Upload new version
-scp deploy.tar.gz root@your-server-ip:/var/www/blokeliai/
+## Development Notes
 
-# On server
-cd /var/www/blokeliai
-tar -xzf deploy.tar.gz
-npm install --production
-pm2 restart server
-```
-
-Remember to replace `your-server-ip`, `your-domain.com`, and `your-email@example.com` with your actual values.
+- The application runs on Node.js 18.18.0
+- Uses PM2 for process management
+- Nginx as reverse proxy
+- WebSocket connections are supported and configured
+- Application runs on port 3000 internally
