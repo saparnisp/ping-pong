@@ -79,7 +79,6 @@ class SocketHandler {
     this.socket.on("gameEnd", (data) => {
       this.controls.setPlaying(false);
       this.display.hideGameElements();
-
       if (data) {
         // Save game data to localStorage
         localStorage.setItem(
@@ -90,6 +89,10 @@ class SocketHandler {
             level: data.level,
           })
         );
+
+        document.getElementById("finalScore").innerHTML = data.score;
+        document.getElementById("finalLines").innerHTML = data.lines;
+        document.getElementById("finalLevel").innerHTML = data.level;
 
         document
           .getElementById("gameOverScreen")
