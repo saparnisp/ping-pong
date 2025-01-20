@@ -1,7 +1,9 @@
 # Blokeliai - Multiplayer Game Deployment Guide
 
 ## Quick Deployment
+
 Quick steps for subsequent deployments:
+
 ```bash
 # 1. Create and upload deployment archive
 tar -czf deploy.tar.gz --exclude='node_modules' --exclude='.git' .
@@ -20,12 +22,14 @@ pm2 restart server
 ## Initial Server Setup (First Time Only)
 
 ### 1. Prerequisites
+
 - Ubuntu VPS server (tested on Ubuntu 24.04)
 - SSH access to your server
 - Server IP: 92.112.180.232
 - Node.js version 18.18.0
 
 ### 2. Initial Server Setup
+
 ```bash
 # Update system and install dependencies
 ssh root@92.112.180.232 "apt update && apt upgrade -y && \
@@ -37,6 +41,7 @@ ssh root@92.112.180.232 "mkdir -p /var/www/blokeliai"
 ```
 
 ### 3. Application Files Setup
+
 ```bash
 # Create deployment archive
 tar -czf deploy.tar.gz --exclude='node_modules' --exclude='.git' .
@@ -53,6 +58,7 @@ chmod -R 755 /var/www/blokeliai"
 ```
 
 ### 4. PM2 Setup
+
 ```bash
 # Install and configure PM2
 ssh root@92.112.180.232 "npm install -g pm2 && \
@@ -64,12 +70,13 @@ pm2 startup"
 ```
 
 ### 5. Nginx Configuration
+
 ```bash
 # Create Nginx configuration
 ssh root@92.112.180.232 "cat > /etc/nginx/sites-available/blokeliai << 'EOL'
 server {
     listen 80;
-    server_name 92.112.180.232;
+    server_name 92.112.180.232 www.blokeliai.site blokeliai.site;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -90,7 +97,9 @@ systemctl restart nginx"
 ```
 
 ## File Structure
+
 Important application files:
+
 ```
 /var/www/blokeliai/
 ├── src/
@@ -107,21 +116,25 @@ Important application files:
 ## Managing the Application
 
 ### View Application Status
+
 ```bash
 ssh root@92.112.180.232 "pm2 list"
 ```
 
 ### View Application Logs
+
 ```bash
 ssh root@92.112.180.232 "pm2 logs server"
 ```
 
 ### Restart Application
+
 ```bash
 ssh root@92.112.180.232 "pm2 restart server"
 ```
 
 ### View Nginx Status
+
 ```bash
 ssh root@92.112.180.232 "systemctl status nginx"
 ```
@@ -129,6 +142,7 @@ ssh root@92.112.180.232 "systemctl status nginx"
 ## Troubleshooting
 
 ### 1. If the application fails to start:
+
 ```bash
 # Check PM2 logs
 ssh root@92.112.180.232 "pm2 logs server"
@@ -141,6 +155,7 @@ ssh root@92.112.180.232 "node --version"
 ```
 
 ### 2. If Nginx returns 502 Bad Gateway:
+
 ```bash
 # Check if Node.js app is running
 ssh root@92.112.180.232 "pm2 list"
@@ -153,6 +168,7 @@ ssh root@92.112.180.232 "tail -f /var/log/nginx/error.log"
 ```
 
 ### 3. Permission Issues:
+
 ```bash
 ssh root@92.112.180.232 "chown -R root:root /var/www/blokeliai && \
 chmod -R 755 /var/www/blokeliai"
@@ -162,11 +178,13 @@ chmod -R 755 /var/www/blokeliai"
 
 1. Register a domain and point it to 92.112.180.232
 2. Install Certbot:
+
 ```bash
 ssh root@92.112.180.232 "apt install -y certbot python3-certbot-nginx"
 ```
 
 3. Get SSL certificate (replace your-domain.com):
+
 ```bash
 ssh root@92.112.180.232 "certbot --nginx -d your-domain.com --non-interactive --agree-tos --email your-email@example.com"
 ```

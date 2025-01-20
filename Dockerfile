@@ -1,4 +1,4 @@
-FROM node:18.18.0-slim
+FROM node:22.13.0-slim
 
 # Create app directory and set ownership
 WORKDIR /app
