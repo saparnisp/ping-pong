@@ -6,17 +6,15 @@ Quick steps for subsequent deployments:
 
 ```bash
 # 1. Create and upload deployment archive
-tar -czf deploy.tar.gz --exclude='node_modules' --exclude='.git' .
-scp deploy.tar.gz root@92.112.180.232:/var/www/blokeliai/
+mkdir -p /tmp/blokeliai-deploy
+tar -czf /tmp/blokeliai-deploy/deploy.tar.gz --exclude='node_modules' --exclude='.git' .
+scp /tmp/blokeliai-deploy/deploy.tar.gz root@92.112.180.232:/var/www/blokeliai/
 
 # 2. SSH into server and deploy
-ssh root@92.112.180.232
+ssh root@92.112.180.232 "cd /var/www/blokeliai && tar -xzf deploy.tar.gz && npm install --production && pm2 restart server"
 
-# 3. Extract and restart
-cd /var/www/blokeliai
-tar -xzf deploy.tar.gz
-npm install --production
-pm2 restart server
+# 3. Verify deployment
+ssh root@92.112.180.232 "pm2 status && systemctl status nginx | grep Active"
 ```
 
 ## Initial Server Setup (First Time Only)
@@ -26,7 +24,8 @@ pm2 restart server
 - Ubuntu VPS server (tested on Ubuntu 24.04)
 - SSH access to your server
 - Server IP: 92.112.180.232
-- Node.js version 18.18.0
+- Node.js version 18.20.5
+- npm version 10.8.2
 
 ### 2. Initial Server Setup
 
@@ -44,10 +43,11 @@ ssh root@92.112.180.232 "mkdir -p /var/www/blokeliai"
 
 ```bash
 # Create deployment archive
-tar -czf deploy.tar.gz --exclude='node_modules' --exclude='.git' .
+mkdir -p /tmp/blokeliai-deploy
+tar -czf /tmp/blokeliai-deploy/deploy.tar.gz --exclude='node_modules' --exclude='.git' .
 
 # Upload to server
-scp deploy.tar.gz root@92.112.180.232:/var/www/blokeliai/
+scp /tmp/blokeliai-deploy/deploy.tar.gz root@92.112.180.232:/var/www/blokeliai/
 
 # Extract and install dependencies
 ssh root@92.112.180.232 "cd /var/www/blokeliai && \
@@ -176,7 +176,7 @@ ssh root@92.112.180.232 "certbot --nginx -d your-domain.com --non-interactive --
 
 ## Development Notes
 
-- The application runs on Node.js 18.18.0
+- The application runs on Node.js 18.20.5
 - Uses PM2 for process management
 - Nginx as reverse proxy
 - WebSocket connections are supported and configured
