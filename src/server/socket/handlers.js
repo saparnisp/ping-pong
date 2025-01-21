@@ -159,7 +159,7 @@ function handleControlsConnect(socket) {
     .to(socket.id)
     .emit("gameConfig", { SCREEN_SIZE, COLORS, DEFAULT_BLOCK_SIZE });
 
-  clearReplayTimers();
+  clearReplayTimers(id);
 
   // Add the socket to queue (will be at the end)
   if (addToQueue(id, socket.id)) {
@@ -353,7 +353,7 @@ function handleDisconnect(socket) {
   if (socket.id === getDisplaySocket(id)?.id) {
     console.log("Display disconnected:");
     setDisplaySocket(id, null);
-    clearReplayTimers();
+    clearReplayTimers(id);
     return;
   }
 

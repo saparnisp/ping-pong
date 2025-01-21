@@ -2,17 +2,17 @@ import { getCurrentGame, getMovesHistory } from "./state.js";
 import { getCurrentPlayer, getDisplaySocket } from "./queue.js";
 import { SCREEN_SIZE } from "../../config.js";
 
-let replayInterval = null;
-let replayTimeout = null;
+let replayInterval = {};
+let replayTimeout = {};
 
-function clearReplayTimers() {
-  if (replayInterval) {
-    clearInterval(replayInterval);
-    replayInterval = null;
+function clearReplayTimers(id) {
+  if (replayInterval[id]) {
+    clearInterval(replayInterval[id]);
+    replayInterval[id] = null;
   }
-  if (replayTimeout) {
-    clearTimeout(replayTimeout);
-    replayTimeout = null;
+  if (replayTimeout[id]) {
+    clearTimeout(replayTimeout[id]);
+    replayTimeout[id] = null;
   }
 }
 
@@ -21,7 +21,7 @@ function startReplay(id) {
   const currentGame = getCurrentGame(id);
 
   const displaySocket = getDisplaySocket(id);
-  if (!lastGameMoves || !displaySocket || replayInterval) return;
+  if (!lastGameMoves || !displaySocket || replayInterval[id]) return;
 
   let moveIndex = 0;
 
@@ -36,21 +36,21 @@ function startReplay(id) {
   console.log("Starting replay with", lastGameMoves.length, "moves");
   displaySocket.emit("replayStart");
 
-  replayInterval = setInterval(() => {
+  replayInterval[id] = setInterval(() => {
     // Stop replay if a player joins
     if (getCurrentPlayer(id)) {
       console.log("Stopping replay - new player joined");
-      clearReplayTimers();
+      clearReplayTimers(id);
       return;
     }
 
     if (moveIndex >= lastGameMoves.length) {
       // End of replay, wait 5 seconds and start again
       console.log("Replay finished, restarting in 5 seconds");
-      clearInterval(replayInterval);
-      replayInterval = null;
+      clearInterval(replayInterval[id]);
+      replayInterval[id] = null;
 
-      replayTimeout = setTimeout(() => {
+      replayTimeout[id] = setTimeout(() => {
         if (!getCurrentPlayer(id) && getDisplaySocket(id)) {
           // Only restart if no active player
           console.log("Restarting replay");
@@ -80,11 +80,11 @@ function startReplay(id) {
 }
 
 function scheduleReplay(id, delay = 5000) {
-  if (replayTimeout) {
-    clearTimeout(replayTimeout);
+  if (replayTimeout[id]) {
+    clearTimeout(replayTimeout[id]);
   }
 
-  replayTimeout = setTimeout(() => {
+  replayTimeout[id] = setTimeout(() => {
     if (!getCurrentPlayer(id) && getDisplaySocket(id)) {
       console.log("Starting scheduled replay");
       startReplay(id);
