@@ -1,7 +1,5 @@
 # Blokeliai - Multiplayer Game Deployment Guide
 
-6sKhsl9^q4w;$xL/BSQ?
-
 ## Quick Deployment
 
 Quick steps for subsequent deployments:
