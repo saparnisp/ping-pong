@@ -2,6 +2,26 @@
 
 ## Quick Deployment
 
+❗️ This is the way to deploy now
+
+### Setup local key for the remote
+
+```bash
+ssh-copy-id root@92.112.180.232
+```
+
+### Setup ssh to use the key as identity:
+
+Add this line to `~/ssh/config`:
+
+> IdentityFile ~/.ssh/id_rsa
+
+Congrats, now you can deploy by running:
+
+```bash
+npm run deploy
+```
+
 Quick steps for subsequent deployments:
 
 ```bash
