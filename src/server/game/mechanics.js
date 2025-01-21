@@ -7,7 +7,7 @@ function clearLines(id) {
 
   let linesCleared = 0;
   for (let row = currentGame.board.length - 1; row >= 0; row--) {
-    if (currentGame.board[row].every((cell) => cell !== 0)) {
+    if (currentGame.board[row].every((cell) => cell === "x")) {
       currentGame.board.splice(row, 1);
       currentGame.board.unshift(Array(SCREEN_SIZE.cols).fill(0));
       linesCleared++;
@@ -42,9 +42,22 @@ function clearLines(id) {
   return { levelUp: false };
 }
 
-function dropPiece(id) {
+function markLinesForRemoval(id) {
   const currentGame = getCurrentGame(id);
 
+  for (let row = currentGame.board.length - 1; row >= 0; row--) {
+    if (currentGame.board[row].every((cell) => cell !== 0)) {
+      currentGame.board[row] = currentGame.board[row].map(() => "x");
+    }
+  }
+  return {
+    levelUp: false,
+  };
+}
+
+function dropPiece(id) {
+  const currentGame = getCurrentGame(id);
+  clearLines(id);
   if (!currentGame.currentPiece) return null;
 
   if (
@@ -64,7 +77,7 @@ function dropPiece(id) {
       currentGame.currentX,
       currentGame.currentY
     );
-    const levelInfo = clearLines(id);
+    const levelInfo = markLinesForRemoval(id);
 
     currentGame.currentPiece = currentGame.nextPiece;
     currentGame.nextPiece = createPiece();

@@ -122,9 +122,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function drawBlock(x, y, colorIndex, glow = false) {
-    ctx.fillStyle = glow
-      ? pSBC(colorGlow, COLORS[colorIndex])
-      : COLORS[colorIndex];
+    if (colorIndex === "x") {
+      ctx.fillStyle = "#ddd";
+    } else {
+      ctx.fillStyle = glow
+        ? pSBC(colorGlow, COLORS[colorIndex])
+        : COLORS[colorIndex];
+    }
+
     ctx.fillRect(
       x * block_size,
       y * block_size,
