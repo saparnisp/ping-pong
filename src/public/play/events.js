@@ -58,6 +58,7 @@ class SocketHandler {
 
     // Game start
     this.socket.on("gameStart", () => {
+      this.display.hideWaitingScreen();
       this.display.showGameElements();
 
       this.isCountingDown = false;

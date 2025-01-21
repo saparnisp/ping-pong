@@ -256,7 +256,7 @@ function handleReconnect(socket) {
   if (getCurrentPlayer(id) === socket.id) {
     console.log("Current player reconnected:", socket.id);
     // Send them the current game state
-    nsp.to(socket.id).emit("gameStart");
+    socket.emit("gameStart");
     nsp.emit("updateGame", currentGame);
   }
 }
