@@ -2,11 +2,16 @@
 // noSleep.enable();
 
 import { createDigit } from "../shared/digits.js";
+import { pSBC } from "../shared/psb.js";
 
 let showNumber = true;
 let COLORS;
 let SCREEN_SIZE;
 let block_size;
+let colorGlow = 1;
+let delta = 0.01;
+let glowInterval;
+
 const storedBlockSize = parseInt(localStorage.getItem("block_size"));
 
 if (!isNaN(storedBlockSize)) {
@@ -86,6 +91,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function startGlow() {
+    if (glowInterval) {
+      return;
+    }
+    console.log("startGlow");
+    glowInterval = setInterval(() => {
+      if (colorGlow > 1) {
+        delta = -0.04;
+      } else if (colorGlow < -0.3) {
+        delta = 0.04;
+      }
+      colorGlow += delta;
+      drawNumber();
+    }, 50);
+  }
+
+  function stopGlow() {
+    console.log("stopGlow");
+    colorGlow = 1;
+    clearInterval(glowInterval);
+    glowInterval = null;
+  }
+
   function cleanUp() {
     for (let y = 0; y < SCREEN_SIZE.rows; y++) {
       for (let x = 0; x < SCREEN_SIZE.cols; x++) {
@@ -94,8 +122,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function drawBlock(x, y, colorIndex) {
-    ctx.fillStyle = COLORS[colorIndex];
+  function drawBlock(x, y, colorIndex, glow = false) {
+    ctx.fillStyle = glow
+      ? pSBC(colorGlow, COLORS[colorIndex])
+      : COLORS[colorIndex];
     ctx.fillRect(
       x * block_size,
       y * block_size,
@@ -113,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
       for (let y = 0; y < screenNumber.length; y++) {
         for (let x = 0; x < screenNumber[y].length; x++) {
           if (screenNumber[y][x]) {
-            drawBlock(x + 3, y + yOffset, screenNumber[y][x]);
+            drawBlock(x + 3, y + yOffset, screenNumber[y][x], true);
           }
         }
       }
@@ -121,6 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   socket.on("countdownStart", () => {
+    stopGlow();
     showNumber = false;
     cleanUp();
   });
@@ -168,6 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   socket.on("replayStart", () => {
     showNumber = true;
+    startGlow();
   });
 
   socket.on("enableBlinking", () => {
@@ -191,6 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     drawGrid();
     drawNumber();
+    startGlow();
   });
 
   socket.emit("displayConnect");
