@@ -161,3 +161,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   socket.emit("displayConnect");
 });
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    postMessage("continue-processing");
+  }
+});
+
+document.addEventListener("beforeunload", () => {
+  postMessage("continue-processing");
+});

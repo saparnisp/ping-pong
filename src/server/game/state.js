@@ -1,3 +1,4 @@
+import { writeFile } from "fs";
 import { SCREEN_SIZE, DROP_SPEEDS } from "../../config.js";
 
 // Initial game state
@@ -31,6 +32,7 @@ function getCurrentGame(id) {
 function getMovesHistory(id) {
   return gameMovesHistory[id];
 }
+
 // Record game moves for replay
 function recordGameMove(id) {
   if (!gameMovesHistory[id]) {
@@ -49,13 +51,21 @@ function recordGameMove(id) {
       : null,
     x: currentGame.currentX,
     y: currentGame.currentY,
-    score: currentGame.score,
-    level: currentGame.level,
-    lines: currentGame.lines,
   });
 }
 
 function resetGame(id) {
+  if (gameMovesHistory[id]?.length ?? 0 > 0) {
+    // writeFile(
+    //   "./moves.json",
+    //   gameMovesHistory[id],
+    //   { encoding: "utf8" },
+    //   () => {
+    //     console.log("Game moves saved to file");
+    //   }
+    // );
+  }
+
   activeGames[id] = createInitialState();
   gameMovesHistory[id] = [];
 }
