@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (glowInterval) {
       return;
     }
-    console.log("startGlow");
+
     glowInterval = setInterval(() => {
       if (colorGlow > 1) {
         delta = -0.04;
@@ -108,7 +108,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function stopGlow() {
-    console.log("stopGlow");
     colorGlow = 1;
     clearInterval(glowInterval);
     glowInterval = null;
