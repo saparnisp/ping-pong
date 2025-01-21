@@ -24,7 +24,7 @@ import {
   SCREEN_SIZE,
   DEFAULT_BLOCK_SIZE,
 } from "../../config.js";
-import { createDigit } from "../game/digits.js";
+import { createDigit } from "../../public/shared/digits.js";
 
 let dropInterval = {};
 let reconnectInterval = {};
@@ -96,6 +96,7 @@ async function handleGameOver(socket, id, result) {
   const currentPlayerId = getCurrentPlayer(id);
   const currentGame = getCurrentGame(id);
   const nsp = io.of(`/display_${id}`);
+  const display = getDisplaySocket(id);
 
   if (currentPlayerId) {
     nsp.to(currentPlayerId).emit("gameEnd", {
@@ -118,7 +119,7 @@ async function handleGameOver(socket, id, result) {
       // Start game for next player in queue
       const nextPlayer = getNextPlayer(id);
       if (nextPlayer) {
-        nsp.to(nextPlayer).emit("countdownStart");
+        nsp.to(nextPlayer).to(display.id).emit("countdownStart");
         startCountdown(socket, id);
       } else if (getDisplaySocket(id)) {
         scheduleReplay(id);
@@ -175,7 +176,7 @@ function handleControlsConnect(socket) {
       const nextPlayer = getNextPlayer(id); // This sets currentPlayer
       console.log("Next player:", nextPlayer);
       if (nextPlayer === socket.id) {
-        nsp.to(nextPlayer).emit("countdownStart");
+        nsp.to(nextPlayer).to(display.id).emit("countdownStart");
         startCountdown(socket, id);
       }
     }
@@ -264,6 +265,7 @@ function handleReconnect(socket) {
 function cleanupPlayer(socket, id) {
   console.log("Removing client", socket.id);
   const nsp = io.of(`/display_${id}`);
+  const display = getDisplaySocket(id);
 
   nsp.emit("disableBlinking");
 
@@ -277,9 +279,10 @@ function cleanupPlayer(socket, id) {
     // Get next player or start replay immediately
     const nextPlayer = getNextPlayer(id);
     if (nextPlayer) {
-      nsp.to(nextPlayer).emit("countdownStart");
+      nsp.to(nextPlayer).to(display.id).emit("countdownStart");
       startCountdown(socket, id);
     } else if (getDisplaySocket(id)) {
+      nsp.to(display.id).emit("replayStart");
       // If display is connected and no players left, start replay immediately
       startReplay(id);
     }

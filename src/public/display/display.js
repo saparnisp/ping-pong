@@ -1,6 +1,9 @@
 // var noSleep = new NoSleep();
 // noSleep.enable();
 
+import { createDigit } from "../shared/digits.js";
+
+let showNumber = true;
 let COLORS;
 let SCREEN_SIZE;
 let block_size;
@@ -83,6 +86,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function cleanUp() {
+    for (let y = 0; y < SCREEN_SIZE.rows; y++) {
+      for (let x = 0; x < SCREEN_SIZE.cols; x++) {
+        drawBlock(x, y, 0);
+      }
+    }
+  }
+
   function drawBlock(x, y, colorIndex) {
     ctx.fillStyle = COLORS[colorIndex];
     ctx.fillRect(
@@ -95,9 +106,27 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.strokeRect(x * block_size, y * block_size, block_size, block_size);
   }
 
+  function drawNumber() {
+    const screenNumber = createDigit(id);
+    const yOffset = Math.round(SCREEN_SIZE.rows / 2) - 4;
+    if (screenNumber) {
+      for (let y = 0; y < screenNumber.length; y++) {
+        for (let x = 0; x < screenNumber[y].length; x++) {
+          if (screenNumber[y][x]) {
+            drawBlock(x + 3, y + yOffset, screenNumber[y][x]);
+          }
+        }
+      }
+    }
+  }
+
+  socket.on("countdownStart", () => {
+    showNumber = false;
+    cleanUp();
+  });
+
   socket.on("updateGame", (gameState) => {
     if (!gameState) return;
-
     drawGrid();
 
     // Draw board
@@ -123,6 +152,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     }
+    if (showNumber) {
+      drawNumber();
+    }
   });
 
   document.addEventListener(
@@ -134,9 +166,8 @@ document.addEventListener("DOMContentLoaded", () => {
     false
   );
 
-  socket.on("gameEnded", () => {
-    // Notify server we're ready for replay
-    socket.emit("readyForReplay");
+  socket.on("replayStart", () => {
+    showNumber = true;
   });
 
   socket.on("enableBlinking", () => {
@@ -157,6 +188,9 @@ document.addEventListener("DOMContentLoaded", () => {
     SCREEN_SIZE = config.SCREEN_SIZE;
     canvas.width = SCREEN_SIZE.cols * block_size;
     canvas.height = SCREEN_SIZE.rows * block_size;
+
+    drawGrid();
+    drawNumber();
   });
 
   socket.emit("displayConnect");
