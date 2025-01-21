@@ -35,7 +35,7 @@ let io = null;
 
 function clearDropInterval(id, force) {
   if (dropInterval[id]) {
-    clearInterval(dropInterval[id]);
+    clearTimeout(dropInterval[id]);
     dropInterval[id] = null;
   }
   if (force) {
@@ -46,6 +46,30 @@ function clearDropInterval(id, force) {
       }
     });
   }
+}
+
+function render(socket, currentGame, id) {
+  const nsp = io.of(`/display_${id}`);
+
+  const result = dropPiece(id);
+  if (result) {
+    recordGameMove(id);
+    if (result.gameOver) {
+      handleGameOver(socket, id, result);
+    } else {
+      nsp.emit("updateGame", currentGame);
+      if (result.levelUp) {
+        nsp.to(getCurrentPlayer(id)).emit("levelUp", {
+          level: currentGame.level,
+          speed: currentGame.dropSpeed,
+        });
+      }
+    }
+  }
+
+  dropInterval[id] = setTimeout(() => {
+    render(socket, currentGame, id);
+  }, currentGame.dropSpeed);
 }
 
 function startNewGame(socket, id) {
@@ -61,24 +85,9 @@ function startNewGame(socket, id) {
   // Initial game state update
   //   console.log("Sending initial game state:", currentGame);
   nsp.emit("updateGame", currentGame);
-
   // Start drop interval
-  dropInterval[id] = setInterval(() => {
-    const result = dropPiece(id);
-    if (result) {
-      recordGameMove(id);
-      if (result.gameOver) {
-        handleGameOver(socket, id, result);
-      } else {
-        nsp.emit("updateGame", currentGame);
-        if (result.levelUp) {
-          nsp.to(getCurrentPlayer(id)).emit("levelUp", {
-            level: currentGame.level,
-            speed: currentGame.dropSpeed,
-          });
-        }
-      }
-    }
+  dropInterval[id] = setTimeout(() => {
+    render(socket, currentGame, id);
   }, currentGame.dropSpeed);
 }
 
