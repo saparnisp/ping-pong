@@ -24,9 +24,12 @@ import {
   SCREEN_SIZE,
   DEFAULT_BLOCK_SIZE,
 } from "../../config.js";
+import { createDigit } from "../game/digits.js";
 
 let dropInterval = {};
 let reconnectInterval = {};
+// TODO: Use it!
+let countDownInterval = {};
 
 let io = null;
 
@@ -48,8 +51,6 @@ function clearDropInterval(id, force) {
 function startNewGame(socket, id) {
   console.log("Starting new game for display:", id);
   const nsp = io.of(`/display_${id}`);
-
-  resetGame(id);
 
   const currentGame = getCurrentGame(id);
   currentGame.currentPiece = createPiece();
@@ -108,8 +109,8 @@ async function handleGameOver(socket, id, result) {
       // Start game for next player in queue
       const nextPlayer = getNextPlayer(id);
       if (nextPlayer) {
-        nsp.to(nextPlayer).emit("gameStart");
-        startNewGame(socket, id);
+        nsp.to(nextPlayer).emit("countdownStart");
+        startCountdown(socket, id);
       } else if (getDisplaySocket(id)) {
         scheduleReplay(id);
       }
@@ -165,9 +166,8 @@ function handleControlsConnect(socket) {
       const nextPlayer = getNextPlayer(id); // This sets currentPlayer
       console.log("Next player:", nextPlayer);
       if (nextPlayer === socket.id) {
-        console.log("Starting game for new player:", socket.id);
-        nsp.to(nextPlayer).emit("gameStart");
-        startNewGame(socket, id); // Start the game immediately when sending gameStart
+        nsp.to(nextPlayer).emit("countdownStart");
+        startCountdown(socket, id);
       }
     }
 
@@ -268,13 +268,68 @@ function cleanupPlayer(socket, id) {
     // Get next player or start replay immediately
     const nextPlayer = getNextPlayer(id);
     if (nextPlayer) {
-      nsp.to(nextPlayer).emit("gameStart");
-      startNewGame(socket, id); // Reset and start game for next player
+      nsp.to(nextPlayer).emit("countdownStart");
+      startCountdown(socket, id);
     } else if (getDisplaySocket(id)) {
       // If display is connected and no players left, start replay immediately
       startReplay(id);
     }
   }
+}
+
+function startGame(socket) {
+  const id = socket.nsp.name.split("_")[1];
+  const nsp = io.of(`/display_${id}`);
+  resetGame(id);
+
+  const currentPlayer = getCurrentPlayer(id);
+
+  nsp.to(currentPlayer).emit("gameStart");
+  startNewGame(socket, id); // Reset and start game for next player
+}
+
+function startCountdown(socket) {
+  let countDown = 5;
+  const id = socket.nsp.name.split("_")[1];
+  const nsp = io.of(`/display_${id}`);
+  resetGame(id);
+  const display = getDisplaySocket(id);
+  const currentGame = getCurrentGame(id);
+  const player = getCurrentPlayer(id);
+  currentGame.nextPiece = null;
+
+  console.log("Starting countdown for player:", display.id);
+  nsp.to(display.id).to(player).emit("updateGame", currentGame);
+
+  const cleanUp = () => {
+    currentGame.currentPiece = null;
+
+    nsp.to(display.id).to(player).emit("updateGame", currentGame);
+  };
+
+  const drawPiece = () => {
+    currentGame.currentPiece = createDigit(countDown);
+    currentGame.currentY = Math.round(SCREEN_SIZE.rows / 3) - 5; // digit height
+
+    nsp.to(display.id).to(player).emit("updateGame", currentGame);
+
+    setTimeout(() => {
+      cleanUp();
+      countDown -= 1;
+
+      if (countDown > 0) {
+        setTimeout(() => {
+          drawPiece();
+        }, 500);
+      } else {
+        setTimeout(() => {
+          startGame(socket);
+        }, 1000);
+      }
+    }, 500);
+  };
+
+  drawPiece();
 }
 
 function handleDisconnect(socket) {

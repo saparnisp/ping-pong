@@ -12,6 +12,7 @@ export const COLORS = {
   5: "#00f000", // S piece (green)
   6: "#f00000", // Z piece (red)
   7: "#a000f0", // T piece (purple)
+  8: "#999", // UI (gray)
 };
 
 export const DROP_SPEEDS = {

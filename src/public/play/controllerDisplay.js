@@ -161,7 +161,7 @@ class ControllerDisplay {
     }
   }
 
-  updateGameInfo(gameState) {
+  updateGameInfo(gameState, isCountDown) {
     if (!gameState) return;
 
     // Update score and level
@@ -176,16 +176,16 @@ class ControllerDisplay {
     }
 
     // Draw game board
-    if (gameState.board) {
+    if (gameState.board && isCountDown) {
       this.drawBoard(gameState.board);
     }
 
     // Draw current piece
-    if (gameState.currentPiece && gameState.currentPiecePosition) {
+    if (gameState.currentPiece && isCountDown) {
       this.drawCurrentPiece(
         gameState.currentPiece,
-        gameState.currentPiecePosition.x,
-        gameState.currentPiecePosition.y
+        gameState.currentX,
+        gameState.currentY
       );
     }
 
@@ -225,7 +225,7 @@ class ControllerDisplay {
 
   showGameElements() {
     if (this.gameElements) {
-      this.gameElements.style.display = "block";
+      this.gameElements.style.display = "flex";
     }
   }
 

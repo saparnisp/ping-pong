@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="controls.css" />
   </head>
   <body>
+    <div class="container">
     <div id="waiting-screen">
       <h3>Laukiama žaidimo pradžios</h2>
       <p>Ekranas:</p>
@@ -31,6 +32,18 @@
       </div>
     </div>
 
+    <div class="canvas-block">
+      <canvas
+      id="gameBoard"
+      style="
+        background: #111;
+        margin: 20px auto;
+        display: block;
+      "
+      ></canvas>
+    </div>
+
+    
     <div class="game-elements" style="display: none">
       <div class="game-info">
         <div class="info-item">
@@ -46,16 +59,6 @@
           <div id="lines" class="info-value">0</div>
         </div>
       </div>
-
-      <canvas
-        id="gameBoard"
-        style="
-          border: 1px solid #333;
-          background: #111;
-          margin: 20px auto;
-          display: block;
-        "
-      ></canvas>
 
       <div class="next-piece-preview">
         <h3>Kita figūra</h3>
@@ -82,5 +85,6 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script type="module" src="play.js"></script>
+    </div>
   </body>
 </html>

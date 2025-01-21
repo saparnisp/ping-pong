@@ -1,5 +1,7 @@
 class SocketHandler {
   socket;
+  isCountingDown = false;
+
   constructor(display, controls, socket) {
     // Clear any previous game state
     localStorage.removeItem("lastGameData");
@@ -56,18 +58,24 @@ class SocketHandler {
 
     // Game start
     this.socket.on("gameStart", () => {
-      if (window.navigator.userAgentData.mobile) {
-        window.navigator.vibrate([100]);
+      this.display.showGameElements();
+
+      this.isCountingDown = false;
+      if (window?.navigator?.userAgentData?.mobile) {
+        window?.navigator?.vibrate([100]);
       }
 
       this.controls.setPlaying(true);
+    });
+
+    this.socket.on("countdownStart", () => {
+      this.isCountingDown = true;
       this.display.hideWaitingScreen();
-      this.display.showGameElements();
     });
 
     // Game updates
     this.socket.on("updateGame", (gameState) => {
-      this.display.updateGameInfo(gameState);
+      this.display.updateGameInfo(gameState, this.isCountingDown);
     });
 
     // Level up
@@ -132,8 +140,6 @@ class SocketHandler {
 
       // Ensure game elements are hidden
       this.display.hideGameElements();
-      console.log("unload?!");
-
       this.display.showWaitingScreen();
     });
   }

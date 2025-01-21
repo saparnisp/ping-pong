@@ -48,7 +48,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const canvas = document.getElementById("gameBoard");
 
     canvas.width = config.SCREEN_SIZE.cols * config.DEFAULT_BLOCK_SIZE;
-    canvas.height = config.SCREEN_SIZE.rows * config.DEFAULT_BLOCK_SIZE;
+    canvas.height =
+      Math.round(config.SCREEN_SIZE.rows / 2) * config.DEFAULT_BLOCK_SIZE;
     canvas?.focus();
 
     // Connect to server as controls

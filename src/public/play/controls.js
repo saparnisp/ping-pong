@@ -53,7 +53,7 @@ class GameControls {
         button.addEventListener(
           "touchstart",
           (e) => {
-            e.preventDefault();
+            // e.preventDefault();
             if (
               action === "moveLeft" ||
               action === "moveRight" ||

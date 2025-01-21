@@ -9,11 +9,11 @@
 
 body {
   margin: 0;
-  padding: 20px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #000;
+  background: #111;
   color: #fff;
-  min-height: 100vh;
+  /* height: 100%; */
+  max-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -64,16 +64,10 @@ body {
   text-align: center;
   margin-bottom: 20px;
   background: rgba(0, 0, 0, 0.95);
-  padding: 15px;
+  padding: 16px;
   border-radius: 8px;
   border: 1px solid #333;
-  position: fixed;
-  top: 50px;
-  left: 50%;
-  transform: translateX(-50%);
   z-index: 100;
-  width: 90%;
-  max-width: 400px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
@@ -94,10 +88,6 @@ body {
 }
 
 .next-piece-preview {
-  position: fixed;
-  top: 180px;
-  left: 50%;
-  transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.95);
   padding: 15px;
   border-radius: 8px;
@@ -116,13 +106,7 @@ canvas.next-piece {
 }
 
 .controls {
-  width: 100%;
-  max-width: 500px;
   padding: 20px;
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.9);
   border-top: 1px solid #333;
   transition: opacity 0.3s ease;
@@ -135,11 +119,22 @@ canvas.next-piece {
   margin-bottom: 20px;
 }
 
+.container {
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 .buttons {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  margin-bottom: env(safe-area-inset-bottom, 20px);
+  margin-bottom: 80px;
 }
 
 .btn {
@@ -203,11 +198,7 @@ canvas.next-piece {
     padding: 15px;
   }
   .game-info {
-    top: 40px;
     padding: 10px;
-  }
-  .next-piece-preview {
-    top: 150px;
   }
 }
 
@@ -219,11 +210,37 @@ canvas.next-piece {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
+
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
 }
 
 .game-elements.visible {
   opacity: 1;
   pointer-events: auto;
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
+}
+
+.canvas-block {
+  padding: 20px 0px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .modal {
