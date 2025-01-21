@@ -1,4 +1,4 @@
-import { writeFile } from "fs";
+// import { writeFile } from "fs";
 import { SCREEN_SIZE, DROP_SPEEDS } from "../../config.js";
 
 // Initial game state

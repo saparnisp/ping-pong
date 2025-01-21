@@ -78,7 +78,8 @@ class GameControls {
         });
 
         // Mouse events (for testing on desktop)
-        button.addEventListener("mousedown", () => {
+        button.addEventListener("mousedown", (e) => {
+          e.preventDefault();
           if (
             action === "moveLeft" ||
             action === "moveRight" ||
@@ -90,7 +91,8 @@ class GameControls {
           }
         });
 
-        button.addEventListener("mouseup", () => {
+        button.addEventListener("mouseup", (e) => {
+          e.preventDefault();
           this.stopRepeat();
         });
 

@@ -8,6 +8,10 @@ const getId = () => {
 
   return id;
 };
+document.addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+  return false;
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   const id = getId();
