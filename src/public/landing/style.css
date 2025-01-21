@@ -229,6 +229,10 @@ h2 {
     min-width: 80px;
   }
 
+  .menu-stats {
+    font-size: 0.75rem;
+  }
+
   .content-wrapper {
     gap: 2rem;
     padding: 30px 15px;

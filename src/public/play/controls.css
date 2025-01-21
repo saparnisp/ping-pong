@@ -106,6 +106,7 @@ canvas.next-piece {
 }
 
 .controls {
+  width: 100%;
   padding: 20px;
   background: rgba(0, 0, 0, 0.9);
   border-top: 1px solid #333;
@@ -120,7 +121,7 @@ canvas.next-piece {
 }
 
 .container {
-  padding: 16px;
+  padding: 16px 0px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -160,11 +161,11 @@ canvas.next-piece {
 
 .btn-left {
   grid-column: 1;
-  grid-row: 2;
+  grid-row: span 2;
 }
 .btn-right {
   grid-column: 3;
-  grid-row: 2;
+  grid-row: span 2;
 }
 .btn-down {
   grid-column: 2;
@@ -287,20 +288,4 @@ canvas.next-piece {
 
 .buttons {
   grid-template-rows: auto auto;
-}
-.btn-rotate {
-  grid-column: 2;
-  grid-row: 1;
-}
-.btn-left {
-  grid-column: 1;
-  grid-row: 2;
-}
-.btn-down {
-  grid-column: 2;
-  grid-row: 2;
-}
-.btn-right {
-  grid-column: 3;
-  grid-row: 2;
 }
