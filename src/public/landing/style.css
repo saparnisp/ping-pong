@@ -8,7 +8,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: "Poppins", Arial, sans-serif;
-  background: radial-gradient(circle at center, #0a0a2a 0%, #000 100%);
+  background: radial-gradient(circle at center, #0a0a2a 0%, #330b56 100%);
   color: #fff;
   min-height: 100vh;
   display: flex;
@@ -26,9 +26,8 @@ body {
   right: 20px;
   padding: 12px 24px;
   background-color: rgba(0, 243, 255, 0.15);
-  border: 2px solid #00f3ff;
   border-radius: 30px;
-  color: #00f3ff;
+  color: #5cffc0;
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 600;
@@ -47,14 +46,14 @@ body {
 .content-wrapper {
   max-width: 800px;
   width: 90%;
-  padding: 40px 20px;
+  padding: 0px 20px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2.5rem;
   position: relative;
   z-index: 10;
-  margin: 40px auto;
+  margin: -60px auto 0;
 }
 
 h1 {
@@ -71,7 +70,7 @@ h1 {
 h2 {
   font-size: 2rem;
   margin: 0;
-  color: #00f3ff;
+  color: #5cffc0;
   text-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
   font-weight: 600;
   letter-spacing: 1px;
@@ -81,7 +80,6 @@ h2 {
   margin: 0;
   font-size: 1.2rem;
   color: #fff;
-  opacity: 0.9;
   font-weight: 500;
   letter-spacing: 0.5px;
 }
@@ -99,22 +97,31 @@ h2 {
 .menu-button {
   position: relative;
   background-color: rgba(0, 243, 255, 0.1);
-  color: #00f3ff;
-  border: 2px solid #00f3ff;
-  padding: 20px;
-  font-size: 1.2rem;
+  color: #5cffc0;
+  padding: 28px 20px 40px;
+  font-size: 1.8rem;
   cursor: pointer;
   border-radius: 20px;
   transition: all 0.3s ease;
   min-width: 100px;
   aspect-ratio: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   text-decoration: none;
   backdrop-filter: blur(8px);
   font-weight: 600;
+  overflow: hidden;
+}
+
+.display-number {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #5cffc0;
+  text-shadow: 0 0 8px rgba(0, 243, 255, 0.3);
+  margin-bottom: 5px;
 }
 
 .menu-stats {
@@ -125,10 +132,18 @@ h2 {
   width: 100%;
   white-space: nowrap;
   text-align: center;
-  bottom: 12px;
-  color: #00f3ff;
-  font-size: 1rem;
-  font-weight: 600;
+  bottom: 0;
+  color: #5cffc0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: rgba(0, 243, 255, 0.08);
+  padding: 8px 0;
+  border-radius: 0 0 18px 18px;
+}
+
+.menu-button .number {
+  font-size: 2.8rem;
+  margin-bottom: 5px;
 }
 
 .menu-button:hover {
@@ -161,7 +176,7 @@ h2 {
   position: absolute;
   width: 4px;
   height: 4px;
-  background: #00f3ff;
+  background: #5cffc0;
   border-radius: 50%;
   animation: float 6s infinite;
   opacity: 0.3;
@@ -200,9 +215,18 @@ h2 {
   }
 
   .menu-button {
-    padding: 15px;
+    padding: 20px 15px 35px;
     font-size: 1.1rem;
     border-radius: 15px;
+  }
+
+  .display-number {
+    font-size: 1.4rem;
+  }
+
+  .menu-stats {
+    font-size: 0.7rem;
+    padding: 6px 0;
   }
 }
 
@@ -224,17 +248,21 @@ h2 {
   }
 
   .menu-button {
-    padding: 12px;
+    padding: 16px 12px 32px;
     font-size: 1rem;
     min-width: 80px;
   }
 
+  .display-number {
+    font-size: 1.2rem;
+  }
+
   .menu-stats {
     font-size: 0.75rem;
+    padding: 5px 0;
   }
 
   .content-wrapper {
-    gap: 2rem;
     padding: 30px 15px;
   }
 }
