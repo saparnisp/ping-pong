@@ -39,6 +39,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  socket.on("return", () => {
+    window.location.href = "/";
+  });
+
   socket.on("gameConfig", (config) => {
     const display = new ControllerDisplay(
       config.COLORS,

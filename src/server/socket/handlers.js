@@ -169,7 +169,7 @@ function handleControlsConnect(socket) {
 
       if (!display) {
         console.log("No display connected, waiting for display...");
-        // TODO: Fire go to the landing
+        socket.emit("return");
         return;
       }
 
