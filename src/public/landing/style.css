@@ -46,14 +46,16 @@ body {
 .content-wrapper {
   max-width: 800px;
   width: 90%;
-  padding: 0px 20px 40px;
+  padding: 80px 20px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2.5rem;
+  gap: 2rem;
   position: relative;
   z-index: 10;
-  margin: -60px auto 0;
+  margin: 0 auto;
+  min-height: 100vh;
+  justify-content: flex-start;
 }
 
 h1 {
@@ -90,8 +92,11 @@ h2 {
   gap: 1.5rem;
   width: 100%;
   max-width: 500px;
-  margin: 20px auto 0;
+  margin: 0 auto;
   padding: 0;
+  overflow-y: auto;
+  max-height: calc(100vh - 400px);
+  -webkit-overflow-scrolling: touch;
 }
 
 .menu-button {
@@ -245,6 +250,7 @@ h2 {
 
   #button-grid {
     gap: 1rem;
+    max-height: calc(100vh - 300px);
   }
 
   .menu-button {
@@ -263,6 +269,7 @@ h2 {
   }
 
   .content-wrapper {
-    padding: 30px 15px;
+    padding: 20px 15px;
+    gap: 1.5rem;
   }
 }
