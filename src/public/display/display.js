@@ -18,9 +18,6 @@ if (!isNaN(storedBlockSize)) {
   block_size = storedBlockSize;
 }
 
-if (storedBlockSize) {
-  console.log("restored block_size =", block_size);
-}
 const recalculateEvent = new CustomEvent("recalculate", {
   bubbles: false,
 });
@@ -37,7 +34,6 @@ const handleKeyup = (event) => {
     case "=":
       if (block_size < 100) {
         block_size += 1;
-        console.log("new block_size =", block_size);
         document.dispatchEvent(recalculateEvent);
         localStorage.setItem("block_size", block_size);
       }
@@ -45,7 +41,6 @@ const handleKeyup = (event) => {
     case "-":
       if (block_size > 1) {
         block_size -= 1;
-        console.log("new block_size", block_size);
         document.dispatchEvent(recalculateEvent);
         localStorage.setItem("block_size", block_size);
       }

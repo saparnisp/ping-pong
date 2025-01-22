@@ -169,6 +169,7 @@ function handleControlsConnect(socket) {
 
       if (!display) {
         console.log("No display connected, waiting for display...");
+        // TODO: Fire go to the landing
         return;
       }
 
@@ -310,7 +311,6 @@ function startCountdown(socket) {
   const player = getCurrentPlayer(id);
   currentGame.nextPiece = null;
 
-  console.log("Starting countdown for player:", display.id);
   nsp.to(display.id).to(player).emit("updateGame", currentGame);
 
   const cleanUp = () => {

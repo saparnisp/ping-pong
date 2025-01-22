@@ -17,6 +17,7 @@ import {
 // Create HTTP server
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
+const isProduction = process.env.NODE_ENV === "production";
 
 const io = new Server(server, {
   connectionStateRecovery: {
@@ -73,11 +74,6 @@ namespace.on("connection", (socket) => {
     setupHandler("leave", handleLeaveGame);
     setupHandler("disconnect", handleDisconnect);
   } else {
-    // Handle socket errors
-    socket.on("error", (error) => {
-      console.error("Socket error:", error);
-    });
-
     setupHandler("displayConnect", handleDisplayConnect);
     setupHandler("controlsConnect", handleControlsConnect);
     setupHandler("leave", handleLeaveGame);

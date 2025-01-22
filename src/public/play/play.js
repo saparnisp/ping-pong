@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   socket.on("connect", () => {
     if (socket.recovered) {
-      console.log("reconnected!");
+      // Success!
     } else {
       socket.emit("controlsConnect");
     }
@@ -45,6 +45,8 @@ document.addEventListener("DOMContentLoaded", () => {
       config.DEFAULT_BLOCK_SIZE,
       config.SCREEN_SIZE
     );
+
+    console.log("Game config received, setting up control events");
     const controls = new GameControls(socket);
     controls.setupControlEvents();
     new SocketHandler(display, controls, socket);

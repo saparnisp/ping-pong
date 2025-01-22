@@ -45,18 +45,16 @@ function startReplay(id) {
     }
 
     if (moveIndex >= lastGameMoves.length) {
-      // End of replay, wait 5 seconds and start again
+      // End of replay, wait 3 seconds and start again
       console.log("Replay finished, restarting in 5 seconds");
       clearInterval(replayInterval[id]);
       replayInterval[id] = null;
 
       replayTimeout[id] = setTimeout(() => {
         if (!getCurrentPlayer(id) && getDisplaySocket(id)) {
-          // Only restart if no active player
-          console.log("Restarting replay");
           startReplay(id);
         }
-      }, 5000);
+      }, 3000);
       return;
     }
 

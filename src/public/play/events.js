@@ -41,13 +41,6 @@ class SocketHandler {
         }, 1000);
       }
     });
-
-    // Handle successful connection
-    this.socket.on("connect", () => {
-      if (!this.isProduction) {
-        console.log("Connected to server");
-      }
-    });
   }
 
   setupEventListeners() {
