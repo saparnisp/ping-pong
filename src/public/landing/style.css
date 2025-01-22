@@ -93,7 +93,7 @@ h2 {
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
-  padding: 0;
+  padding: 20px;
   overflow-y: auto;
   max-height: calc(100vh - 400px);
   -webkit-overflow-scrolling: touch;
@@ -107,7 +107,7 @@ h2 {
   font-size: 1.8rem;
   cursor: pointer;
   border-radius: 20px;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 100px;
   aspect-ratio: 1;
   display: flex;
@@ -119,6 +119,7 @@ h2 {
   backdrop-filter: blur(8px);
   font-weight: 600;
   overflow: hidden;
+  box-shadow: none;
 }
 
 .display-number {
@@ -152,9 +153,9 @@ h2 {
 }
 
 .menu-button:hover {
-  background-color: rgba(0, 243, 255, 0.2);
-  transform: scale(1.05);
-  box-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+  background-color: rgba(0, 243, 255, 0.15);
+  transform: scale(1.03);
+  box-shadow: 0 0 20px rgba(92, 255, 192, 0.3);
 }
 
 @keyframes glow {
