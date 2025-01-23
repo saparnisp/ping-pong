@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineWidth = strokeSize;
     ctx.strokeStyle = color;
-    
+
     // Draw vertical grid lines
     for (let i = 0; i <= canvas.width; i += block_size) {
       ctx.beginPath();
@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ctx.lineTo(i, canvas.height);
       ctx.stroke();
     }
-    
+
     // Draw horizontal grid lines
     for (let i = 0; i <= canvas.height; i += block_size) {
       ctx.beginPath();
@@ -276,6 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
     COLORS = config.COLORS;
     block_size = config.DEFAULT_BLOCK_SIZE;
     SCREEN_SIZE = config.SCREEN_SIZE;
+    strokeSize = config.STROKE;
     canvas.width = SCREEN_SIZE.cols * block_size;
     canvas.height = SCREEN_SIZE.rows * block_size;
 

@@ -23,6 +23,7 @@ import {
   RECONNECT_WAIT,
   SCREEN_SIZE,
   DEFAULT_BLOCK_SIZE,
+  STROKE,
 } from "../../config.js";
 import { createDigit } from "../../public/shared/digits.js";
 
@@ -138,7 +139,7 @@ function handleDisplayConnect(socket) {
   setDisplaySocket(id, socket);
   nsp
     .to(socket.id)
-    .emit("gameConfig", { SCREEN_SIZE, COLORS, DEFAULT_BLOCK_SIZE });
+    .emit("gameConfig", { SCREEN_SIZE, COLORS, DEFAULT_BLOCK_SIZE, STROKE });
 
   if (!getCurrentPlayer(id)) {
     startReplay(id);
@@ -157,7 +158,7 @@ function handleControlsConnect(socket) {
 
   nsp
     .to(socket.id)
-    .emit("gameConfig", { SCREEN_SIZE, COLORS, DEFAULT_BLOCK_SIZE });
+    .emit("gameConfig", { SCREEN_SIZE, COLORS, DEFAULT_BLOCK_SIZE, STROKE });
 
   clearReplayTimers(id);
 
