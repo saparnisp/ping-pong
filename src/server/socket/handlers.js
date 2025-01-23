@@ -118,11 +118,11 @@ async function handleGameOver(socket, id, result) {
 
       // Start game for next player in queue
       const nextPlayer = getNextPlayer(id);
-      if (nextPlayer) {
+      if (nextPlayer && display?.id) {
         nsp.to(nextPlayer).to(display.id).emit("countdownStart");
         startCountdown(socket, id);
-      } else if (getDisplaySocket(id)) {
-        scheduleReplay(id);
+      } else if (display?.id) {
+        scheduleReplay(display?.id);
       }
     } catch (error) {
       console.error("Error handling game over:", error);
@@ -176,7 +176,7 @@ function handleControlsConnect(socket) {
       console.log("No current player, checking for next player...");
       const nextPlayer = getNextPlayer(id); // This sets currentPlayer
       console.log("Next player:", nextPlayer);
-      if (nextPlayer === socket.id) {
+      if (nextPlayer === socket.id && display?.id) {
         nsp.to(nextPlayer).to(display.id).emit("countdownStart");
         startCountdown(socket, id);
       }
