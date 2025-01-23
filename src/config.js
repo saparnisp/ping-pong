@@ -1,5 +1,5 @@
 export const RECONNECT_WAIT = 10 * 1000; // 20 seconds
-export const DEFAULT_BLOCK_SIZE = 30;
+export const DEFAULT_BLOCK_SIZE = 40;
 export const SCREEN_SIZE = { rows: 35, cols: 10 };
 export const MAX_LEVEL = 10;
 

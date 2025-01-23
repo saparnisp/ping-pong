@@ -11,8 +11,11 @@ let block_size;
 let colorGlow = 1;
 let delta = 0.01;
 let glowInterval;
+let showBorder = false;
 
 const storedBlockSize = parseInt(localStorage.getItem("block_size"));
+let storedStrokeSize = parseInt(localStorage.getItem("stroke_size"));
+let strokeSize = !isNaN(storedStrokeSize) ? storedStrokeSize : 1;
 
 if (!isNaN(storedBlockSize)) {
   block_size = storedBlockSize;
@@ -29,26 +32,67 @@ const getId = () => {
   return id;
 };
 
-const handleKeyup = (event) => {
-  switch (event.key) {
-    case "=":
-      if (block_size < 100) {
-        block_size += 1;
-        document.dispatchEvent(recalculateEvent);
-        localStorage.setItem("block_size", block_size);
-      }
-      break;
-    case "-":
-      if (block_size > 1) {
-        block_size -= 1;
-        document.dispatchEvent(recalculateEvent);
-        localStorage.setItem("block_size", block_size);
-      }
-      break;
-  }
-};
-
 document.addEventListener("DOMContentLoaded", () => {
+  const handleKeyup = (event) => {
+    switch (event.key) {
+      case "=":
+        if (block_size < 100) {
+          block_size += 1;
+          document.dispatchEvent(recalculateEvent);
+          localStorage.setItem("block_size", block_size);
+        }
+        break;
+      case "-":
+        if (block_size > 1) {
+          block_size -= 1;
+          document.dispatchEvent(recalculateEvent);
+          localStorage.setItem("block_size", block_size);
+        }
+        break;
+      case "ArrowUp":
+        console.log({ strokeSize });
+        if (strokeSize < 20) {
+          strokeSize += 1;
+          localStorage.setItem("stroke_size", strokeSize);
+
+          drawGrid();
+
+          if (showNumber) {
+            drawNumber();
+          }
+          if (showBorder) {
+            drawBorder();
+          }
+        }
+        break;
+      case "ArrowDown":
+        if (block_size > 1) {
+          strokeSize -= 1;
+          localStorage.setItem("stroke_size", strokeSize);
+
+          drawGrid();
+
+          if (showNumber) {
+            drawNumber();
+          }
+          if (showBorder) {
+            drawBorder();
+          }
+        }
+        break;
+      case "b":
+        showBorder = !showBorder;
+        drawGrid();
+
+        if (showNumber) {
+          drawNumber();
+        }
+        if (showBorder) {
+          drawBorder();
+        }
+        break;
+    }
+  };
   document.addEventListener("keyup", handleKeyup);
 
   const id = getId();
@@ -69,8 +113,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("tetrisCanvas");
   const ctx = canvas.getContext("2d");
 
+  function drawBorder() {
+    ctx.strokeStyle = "#f00";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+  }
+
   function drawGrid() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.lineWidth = strokeSize;
     ctx.strokeStyle = "#333";
     for (let i = 0; i <= canvas.width; i += block_size) {
       ctx.beginPath();
@@ -117,6 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function drawBlock(x, y, colorIndex, glow = false) {
+    ctx.lineWidth = 1;
     if (colorIndex === "x") {
       ctx.fillStyle = "#ddd";
     } else {
@@ -185,6 +237,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (showNumber) {
       drawNumber();
     }
+    if (showBorder) {
+      drawBorder();
+    }
   });
 
   document.addEventListener(
@@ -192,6 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
     () => {
       canvas.width = SCREEN_SIZE.cols * block_size;
       canvas.height = SCREEN_SIZE.rows * block_size;
+      drawGrid();
     },
     false
   );
