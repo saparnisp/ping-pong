@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
     glowInterval = setInterval(() => {
       if (colorGlow > 1) {
         delta = -0.04;
-      } else if (colorGlow < -0.6) {
+      } else if (colorGlow < -0.2) {
         delta = 0.04;
       }
       colorGlow += delta;
