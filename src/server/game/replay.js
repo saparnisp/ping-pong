@@ -77,7 +77,7 @@ function startReplay(id) {
   }, 100); // Update every 100ms for smooth replay
 }
 
-function scheduleReplay(id, delay = 5000) {
+function scheduleReplay(id, delay = 3000) {
   if (replayTimeout[id]) {
     clearTimeout(replayTimeout[id]);
   }

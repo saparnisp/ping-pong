@@ -120,10 +120,11 @@ async function handleGameOver(socket, id, result) {
       // Start game for next player in queue
       const nextPlayer = getNextPlayer(id);
       if (nextPlayer && display?.id) {
+        console.log("Next player:", nextPlayer);
         nsp.to(nextPlayer).to(display.id).emit("countdownStart");
         startCountdown(socket, id);
-      } else if (display?.id) {
-        scheduleReplay(display?.id);
+      } else {
+        scheduleReplay(id);
       }
     } catch (error) {
       console.error("Error handling game over:", error);
