@@ -7,6 +7,7 @@
 # certbot --nginx -d blokeliai.site -d www.blokeliai.stie
 
 cd /var/www/blokeliai
+source ~/.nvm/nvm.sh;
 npm install --production
 chown -R root:root /var/www/blokeliai
 chmod -R 755 /var/www/blokeliai
