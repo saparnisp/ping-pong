@@ -18,7 +18,7 @@ async function loadScores() {
     scores = JSON.parse(data).slice(0, MAX_SCORES);
     return scores;
   } catch (error) {
-    console.error("Error loading scores:", error);
+    console.error("Error loading scores file!");
     scores = [];
     return scores;
   }
@@ -29,13 +29,14 @@ async function saveScores() {
   try {
     await fs.writeFile(SCORES_FILE, JSON.stringify(scores));
   } catch (error) {
-    console.error("Error saving scores:", error);
+    console.error("Error saving scores");
   }
 }
 
 // Add new score
 async function addScore(score) {
   const newScore = {
+    screen: score.screen,
     points: score.points,
     lines: score.lines,
     timestamp: new Date().toISOString(),

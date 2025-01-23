@@ -108,6 +108,7 @@ async function handleGameOver(socket, id, result) {
 
     try {
       await addScore({
+        screen: id,
         points: result.finalScore,
         lines: result.finalLines,
         timestamp: new Date().toISOString(),
