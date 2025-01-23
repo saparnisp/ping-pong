@@ -145,13 +145,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     glowInterval = setInterval(() => {
       if (colorGlow > 1) {
-        delta = -0.05;
-      } else if (colorGlow < -0.8) {
-        delta = 0.05;
+        delta = -0.04;
+      } else if (colorGlow < -0.6) {
+        delta = 0.04;
       }
       colorGlow += delta;
       drawNumber();
-    }, 20);
+    }, 40);
   }
 
   function stopGlow() {
