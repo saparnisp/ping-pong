@@ -6,7 +6,7 @@ import { dirname } from "node:path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const MAX_SCORES = 100;
+const MAX_SCORES = 1000;
 const SCORES_FILE = path.join(__dirname, "..", "..", "..", "scores.json");
 
 let scores = [];
