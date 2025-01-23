@@ -29,7 +29,6 @@ import { createDigit } from "../../public/shared/digits.js";
 
 let dropInterval = {};
 let reconnectInterval = {};
-// TODO: Use it!
 let countDownInterval = {};
 
 let io = null;
@@ -46,6 +45,13 @@ function clearDropInterval(id, force) {
         dropInterval[key] = null;
       }
     });
+  }
+}
+
+function clearCountdownInterval(id) {
+  if (countDownInterval[id]) {
+    clearTimeout(countDownInterval[id]);
+    countDownInterval[id] = null;
   }
 }
 
@@ -329,16 +335,16 @@ function startCountdown(socket) {
 
     nsp.to(display.id).to(player).emit("updateGame", currentGame);
 
-    setTimeout(() => {
+    countDownInterval[id] = setTimeout(() => {
       cleanUp();
       countDown -= 1;
 
       if (countDown > 0) {
-        setTimeout(() => {
+        countDownInterval[id] = setTimeout(() => {
           drawPiece();
         }, 500);
       } else {
-        setTimeout(() => {
+        countDownInterval[id] = setTimeout(() => {
           startGame(socket);
         }, 1000);
       }
@@ -356,6 +362,8 @@ function handleDisconnect(socket) {
 
   if (socket.id === getDisplaySocket(id)?.id) {
     console.log("Display disconnected:");
+    cleanUp();
+    clearCountdownInterval(id);
     setDisplaySocket(id, null);
     clearReplayTimers(id);
     return;
