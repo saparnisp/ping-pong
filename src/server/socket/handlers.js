@@ -279,11 +279,11 @@ function cleanupPlayer(socket, id) {
 
     // Get next player or start replay immediately
     const nextPlayer = getNextPlayer(id);
-    if (nextPlayer) {
+    if (nextPlayer && display?.id) {
       nsp.to(nextPlayer).to(display.id).emit("countdownStart");
       startCountdown(socket, id);
-    } else if (getDisplaySocket(id)) {
-      nsp.to(display.id).emit("replayStart");
+    } else if (display && display?.id) {
+      nsp.to(display?.id).emit("replayStart");
       // If display is connected and no players left, start replay immediately
       startReplay(id);
     }
