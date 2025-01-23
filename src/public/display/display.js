@@ -194,7 +194,12 @@ document.addEventListener("DOMContentLoaded", () => {
       for (let y = 0; y < screenNumber.length; y++) {
         for (let x = 0; x < screenNumber[y].length; x++) {
           if (screenNumber[y][x]) {
-            drawBlock(x + 3, y + yOffset, screenNumber[y][x], true);
+            drawBlock(
+              x + (SCREEN_SIZE.cols / 2 - 2),
+              y + yOffset,
+              screenNumber[y][x],
+              true
+            );
           }
         }
       }
