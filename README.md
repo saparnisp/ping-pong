@@ -196,8 +196,12 @@ ssh root@92.112.180.232 "certbot --nginx -d your-domain.com --non-interactive --
 
 ## Development Notes
 
-- The application runs on Node.js 18.20.5
+- The application runs on Node.js 23.6.1
 - Uses PM2 for process management
 - Nginx as reverse proxy
 - WebSocket connections are supported and configured
 - Application runs on port 3000 internally
+
+### Prod node version is managed by nvm
+
+https://github.com/nvm-sh/nvm
