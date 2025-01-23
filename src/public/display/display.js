@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
           strokeSize += 1;
           localStorage.setItem("stroke_size", strokeSize);
 
-          drawGrid();
+          drawGrid(showBorder ? "#f00" : "#333");
 
           if (showNumber) {
             drawNumber();
@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
           strokeSize -= 1;
           localStorage.setItem("stroke_size", strokeSize);
 
-          drawGrid();
+          drawGrid(showBorder ? "#f00" : "#333");
 
           if (showNumber) {
             drawNumber();
@@ -82,13 +82,10 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
       case "b":
         showBorder = !showBorder;
-        drawGrid();
+        drawGrid(showBorder ? "#f00" : "#333");
 
         if (showNumber) {
           drawNumber();
-        }
-        if (showBorder) {
-          drawBorder();
         }
         break;
     }
@@ -119,16 +116,20 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.strokeRect(0, 0, canvas.width, canvas.height);
   }
 
-  function drawGrid() {
+  function drawGrid(color = "#333") {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineWidth = strokeSize;
-    ctx.strokeStyle = "#333";
+    ctx.strokeStyle = color;
+    
+    // Draw vertical grid lines
     for (let i = 0; i <= canvas.width; i += block_size) {
       ctx.beginPath();
       ctx.moveTo(i, 0);
       ctx.lineTo(i, canvas.height);
       ctx.stroke();
     }
+    
+    // Draw horizontal grid lines
     for (let i = 0; i <= canvas.height; i += block_size) {
       ctx.beginPath();
       ctx.moveTo(0, i);
