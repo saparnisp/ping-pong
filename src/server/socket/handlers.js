@@ -321,7 +321,8 @@ function startCountdown(socket) {
 
   const drawPiece = () => {
     currentGame.currentPiece = createDigit(countDown);
-    currentGame.currentY = Math.round(SCREEN_SIZE.rows / 3) - 5; // digit height
+    currentGame.currentY = Math.round(SCREEN_SIZE.rows / 2) - 5; // digit height
+    currentGame.currentX = 5; // digit height
 
     nsp.to(display.id).to(player).emit("updateGame", currentGame);
 

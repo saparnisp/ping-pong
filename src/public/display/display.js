@@ -145,13 +145,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     glowInterval = setInterval(() => {
       if (colorGlow > 1) {
-        delta = -0.04;
-      } else if (colorGlow < -0.5) {
-        delta = 0.04;
+        delta = -0.05;
+      } else if (colorGlow < -0.8) {
+        delta = 0.05;
       }
       colorGlow += delta;
       drawNumber();
-    }, 50);
+    }, 20);
   }
 
   function stopGlow() {
@@ -191,16 +191,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function drawNumber() {
     const screenNumber = createDigit(id);
     const yOffset = Math.round(SCREEN_SIZE.rows / 2) - 4;
+    const xOffset = Math.round(SCREEN_SIZE.cols / 2) - 1;
+
     if (screenNumber) {
       for (let y = 0; y < screenNumber.length; y++) {
         for (let x = 0; x < screenNumber[y].length; x++) {
           if (screenNumber[y][x]) {
-            drawBlock(
-              x + (SCREEN_SIZE.cols / 2 - 2),
-              y + yOffset,
-              screenNumber[y][x],
-              true
-            );
+            drawBlock(x + xOffset, y + yOffset, screenNumber[y][x], true);
           }
         }
       }
