@@ -151,7 +151,7 @@ class ControllerDisplay {
 
   drawCurrentPiece(piece, x, y) {
     if (!this.boardCtx) return;
-    const xOffset = (5 - piece[0].length) / 2 - 1;
+    const xOffset = (5 - piece[0].length) / 2 - 1.5;
     const yOffset = (5 - piece.length) / 2 - 7;
 
     for (let py = 0; py < piece.length; py++) {
