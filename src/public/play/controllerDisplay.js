@@ -225,6 +225,9 @@ class ControllerDisplay {
       this.levelElement.style.color = "#fff";
       setTimeout(() => {
         this.levelElement.style.color = "#FFC107";
+        setTimeout(() => {
+          this.levelElement.style.color = "#fff";
+        }, 500);
       }, 500);
     }
   }
