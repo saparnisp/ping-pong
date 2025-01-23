@@ -212,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   socket.on("updateGame", (gameState) => {
     if (!gameState) return;
-    drawGrid();
+    drawGrid(showBorder ? "#f00" : "#333");
 
     // Draw board
     for (let y = 0; y < gameState.board.length; y++) {
