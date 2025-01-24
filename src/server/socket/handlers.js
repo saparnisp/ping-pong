@@ -329,12 +329,6 @@ function startCountdown(socket) {
 
   nsp.to(display.id).to(player).emit("updateGame", currentGame);
 
-  const cleanUp = () => {
-    currentGame.currentPiece = null;
-
-    nsp.to(display.id).to(player).emit("updateGame", currentGame);
-  };
-
   const drawPiece = () => {
     currentGame.currentPiece = createDigit(countDown);
     currentGame.currentY = Math.round(SCREEN_SIZE.rows / 2) - 5; // digit height
@@ -343,7 +337,9 @@ function startCountdown(socket) {
     nsp.to(display.id).to(player).emit("updateGame", currentGame);
 
     countDownInterval[id] = setTimeout(() => {
-      cleanUp();
+      currentGame.currentPiece = null;
+      nsp.to(display.id).to(player).emit("updateGame", currentGame);
+
       countDown -= 1;
 
       if (countDown > 0) {
@@ -364,12 +360,16 @@ function startCountdown(socket) {
 function handleDisconnect(socket) {
   const id = socket.nsp.name.split("_")[1];
   const nsp = io.of(`/display_${id}`);
+  const currentGame = getCurrentGame(id);
 
   console.log("Client disconnected:", socket.id, "display:", id);
 
   if (socket.id === getDisplaySocket(id)?.id) {
     console.log("Display disconnected:");
-    cleanUp();
+
+    currentGame.currentPiece = null;
+    nsp.to(display.id).to(player).emit("updateGame", currentGame);
+
     clearCountdownInterval(id);
     setDisplaySocket(id, null);
     clearReplayTimers(id);
