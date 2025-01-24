@@ -62,6 +62,21 @@ body {
   margin: 10px 0;
 }
 
+/* Warning and note styles */
+#waiting-screen .warning-text {
+  color: #ff6b6b;
+  font-weight: 600;
+  font-size: 1.3em;
+  margin-top: 25px;
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+}
+
+#waiting-screen .note-text {
+  color: #aaa;
+  font-size: 1.1em;
+  margin: 10px 0 20px;
+}
+
 #waiting-screen .position {
   font-size: 2em;
   color: #fff;
@@ -302,4 +317,28 @@ canvas.next-piece {
 
 .buttons {
   grid-template-rows: auto auto;
+}
+
+#language-switcher {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 24px;
+  background-color: rgba(0, 243, 255, 0.15);
+  border-radius: 30px;
+  color: #5cffc0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  font-size: 1rem;
+  z-index: 3001;
+  backdrop-filter: blur(8px);
+  letter-spacing: 1px;
+  border: none;
+}
+
+#language-switcher:hover {
+  background-color: rgba(0, 243, 255, 0.25);
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
 }

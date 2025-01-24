@@ -2,6 +2,21 @@ import { ControllerDisplay } from "./controllerDisplay.js";
 import { GameControls } from "./controls.js";
 import { SocketHandler } from "./events.js";
 
+let currentLanguage = "lt";
+
+function updateTexts() {
+  document.querySelectorAll("[data-lt]").forEach((element) => {
+    element.textContent = element.getAttribute(`data-${currentLanguage}`);
+  });
+}
+
+function toggleLanguage() {
+  currentLanguage = currentLanguage === "lt" ? "en" : "lt";
+  updateTexts();
+  document.getElementById("language-switcher").textContent =
+    currentLanguage === "lt" ? "EN" : "LT";
+}
+
 const getId = () => {
   let params = new URLSearchParams(document.location.search);
   let id = params.get("id");
@@ -12,8 +27,14 @@ document.addEventListener("contextmenu", (e) => {
   e.preventDefault();
   return false;
 });
-
 document.addEventListener("DOMContentLoaded", () => {
+  document
+    .getElementById("language-switcher")
+    .addEventListener("click", toggleLanguage);
+    
+  updateTexts();
+
+
   const id = getId();
   document.getElementById("screen-id").innerHTML = id;
   document.getElementById("screen").innerHTML = id;

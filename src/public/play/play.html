@@ -11,25 +11,26 @@
     <link rel="stylesheet" href="controls.css" />
   </head>
   <body>
+    <button id="language-switcher">EN</button>
     <div class="container">
     <div id="waiting-screen">
-      <h3>Laukiama žaidimo pradžios</h2>
-      <p>Ekranas:</p>
-      <h1 id="screen-id"></h3>
-      <p>Žaidėjų eilėje: <span id="queue-count">0</span></p>
-      <p>Jūsų pozicija: <span id="queue-position">...</span></p>
-      <button id="start-button" class="menu-button" style="display: none">
-        Pradėti žaidimą
-      </button>
+      <h3 data-lt="Laukiama žaidimo pradžios" data-en="Waiting for game start">Laukiama žaidimo pradžios</h3>
+      <p><span data-lt="Ekranas" data-en="Screen">Ekranas</span>:</p>
+      <h1 id="screen-id"></h1>
+      <p><span data-lt="Žaidėjų eilėje" data-en="Players in queue">Žaidėjų eilėje</span>: <span id="queue-count">0</span></p>
+      <p><span data-lt="Jūsų pozicija" data-en="Your position">Jūsų pozicija</span>: <span id="queue-position">...</span></p>
+      <p class="warning-text" data-lt="Užrakinus telefoną prarasite vietą eilėje" data-en="Locking your phone will lose your place in queue">
+        Užrakinus telefoną prarasite vietą eilėje
+      </p>
     </div>
 
     <div id="gameOverScreen" style="display: none" class="modal">
       <div class="modal-content">
-        <h2>Žaidimas baigtas!</h2>
-        <p>Taškai: <span id="finalScore">0</span></p>
-        <p>Eilutės: <span id="finalLines">0</span></p>
-        <p>Lygis: <span id="finalLevel">0</span></p>
-        <button id="closeButton" class="menu-button">Grįžti į meniu</button>
+        <h2 data-lt="Žaidimas baigtas!" data-en="Game Over!">Žaidimas baigtas!</h2>
+        <p><span data-lt="Taškai" data-en="Score">Taškai</span>: <span id="finalScore">0</span></p>
+        <p><span data-lt="Eilutės" data-en="Lines">Eilutės</span>: <span id="finalLines">0</span></p>
+        <p><span data-lt="Lygis" data-en="Level">Lygis</span>: <span id="finalLevel">0</span></p>
+        <button id="closeButton" class="menu-button" data-lt="Grįžti į meniu" data-en="Return to menu">Grįžti į meniu</button>
       </div>
     </div>
 
@@ -47,36 +48,36 @@
     
     <div class="game-elements" style="display: none">
       <div class="info-item">
-        <div>Langas</div>
+        <div data-lt="Langas" data-en="Screen">Langas</div>
         <div id="screen" class="info-level"></div>
       </div>
       <div class="game-info">
         <div class="info-item">
-          <div>Taškai</div>
+          <div data-lt="Taškai" data-en="Score">Taškai</div>
           <div id="score" class="info-value">0</div>
         </div>
         <div class="info-item">
-          <div>Lygis</div>
+          <div data-lt="Lygis" data-en="Level">Lygis</div>
           <div id="level" class="info-value">1</div>
         </div>
         <div class="info-item">
-          <div>Eilutės</div>
+          <div data-lt="Eilutės" data-en="Lines">Eilutės</div>
           <div id="lines" class="info-value">0</div>
         </div>
       </div>
 
       <div class="next-piece-preview">
-        <h3>Kita figūra</h3>
+        <h3 data-lt="Kita figūra" data-en="Next piece">Kita figūra</h3>
         <canvas id="nextPiece" class="next-piece"></canvas>
       </div>
 
       <div class="controls">
         <div class="keyboard-controls">
-          <h2>Klaviatūros valdymas</h2>
+          <h2 data-lt="Klaviatūros valdymas" data-en="Keyboard controls">Klaviatūros valdymas</h2>
           <ul>
-            <li>← → : Judėti į šonus</li>
-            <li>↓ : Judėti žemyn</li>
-            <li>↑ : Pasukti figūrą</li>
+            <li data-lt="← → : Judėti į šonus" data-en="← → : Move sideways">← → : Judėti į šonus</li>
+            <li data-lt="↓ : Judėti žemyn" data-en="↓ : Move down">↓ : Judėti žemyn</li>
+            <li data-lt="↑ : Pasukti figūrą" data-en="↑ : Rotate piece">↑ : Pasukti figūrą</li>
           </ul>
         </div>
         <div class="buttons">
