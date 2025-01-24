@@ -269,6 +269,12 @@ function handleReconnect(socket) {
     // Send them the current game state
     socket.emit("gameStart");
     nsp.emit("updateGame", currentGame);
+  } else {
+    // Reset player to landing if he was reconnected into the queue
+    socket.emit("return");
+    getAllQueueStatuses(id).forEach(({ playerId, status }) => {
+      nsp.to(playerId).emit("queueUpdate", status);
+    });
   }
 }
 
@@ -282,9 +288,6 @@ function cleanupPlayer(socket, id) {
   if (removePlayer(id, socket.id)) {
     clearDropInterval(id);
     // Update remaining players' queue positions
-    getAllQueueStatuses(id).forEach(({ playerId, status }) => {
-      nsp.to(playerId).emit("queueUpdate", status);
-    });
 
     // Get next player or start replay immediately
     const nextPlayer = getNextPlayer(id);
@@ -297,6 +300,10 @@ function cleanupPlayer(socket, id) {
       startReplay(id);
     }
   }
+
+  getAllQueueStatuses(id).forEach(({ playerId, status }) => {
+    nsp.to(playerId).emit("queueUpdate", status);
+  });
 }
 
 function startGame(socket) {
