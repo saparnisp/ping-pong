@@ -205,3 +205,9 @@ ssh root@92.112.180.232 "certbot --nginx -d your-domain.com --non-interactive --
 ### Prod node version is managed by nvm
 
 https://github.com/nvm-sh/nvm
+
+### Copy scores file from the prod:
+
+```bash
+scp root@92.112.180.232:/var/www/blokeliai/scores.json .
+```
