@@ -17,8 +17,8 @@ export const COLORS = {
 };
 
 export const DROP_SPEEDS = {
-  1: 220, // Level 1: 0.5 seconds
-  2: 180, // Level 2: 0.45 seconds
+  1: 210, // Level 1: 0.5 seconds
+  2: 170, // Level 2: 0.45 seconds
   3: 100, // Level 3: 0.4 seconds
   4: 80, // Level 4: 0.35 seconds
   5: 50, // Level 5: 0.3 seconds
