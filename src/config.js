@@ -3,6 +3,7 @@ export const DEFAULT_BLOCK_SIZE = 51;
 export const SCREEN_SIZE = { rows: 35, cols: 12 };
 export const STROKE = 4;
 export const MAX_LEVEL = 10;
+export const LINES_PER_LEVEL = 4; // Number of lines needed to advance to next level
 
 export const COLORS = {
   0: "#111", // Empty cell
@@ -17,14 +18,14 @@ export const COLORS = {
 };
 
 export const DROP_SPEEDS = {
-  1: 210, // Level 1: 0.5 seconds
-  2: 170, // Level 2: 0.45 seconds
-  3: 100, // Level 3: 0.4 seconds
-  4: 80, // Level 4: 0.35 seconds
-  5: 50, // Level 5: 0.3 seconds
-  6: 20, // Level 6: 0.25 seconds
-  7: 10, // Level 7: 0.2 seconds
-  8: 10, // Level 8: 0.15 seconds
-  9: 10, // Level 9: 0.1 seconds
-  10: 10, // Level 10: 0.05 seconds
-};
+  1: 210,  // 0.21 seconds
+  2: 170,  // 0.17 seconds
+  3: 140,  // 0.14 seconds
+  4: 110,  // 0.11 seconds  
+  5: 80,   // 0.08 seconds
+  6: 60,   // 0.06 seconds
+  7: 45,   // 0.045 seconds
+  8: 30,   // 0.03 seconds
+  9: 20,   // 0.02 seconds
+  10: 10   // 0.01 seconds
+ };

@@ -1,6 +1,6 @@
 import { getCurrentGame } from "./state.js";
 import { createPiece, collision, freezePiece, rotatePiece } from "./pieces.js";
-import { DROP_SPEEDS, SCREEN_SIZE, MAX_LEVEL } from "../../config.js";
+import { DROP_SPEEDS, SCREEN_SIZE, MAX_LEVEL, LINES_PER_LEVEL } from "../../config.js";
 
 function clearLines(id) {
   const currentGame = getCurrentGame(id);
@@ -23,7 +23,7 @@ function clearLines(id) {
 
     // Calculate new level
     const newLevel = Math.min(
-      Math.floor(currentGame.lines / SCREEN_SIZE.cols) + 1,
+      Math.floor(currentGame.lines / LINES_PER_LEVEL) + 1,
       MAX_LEVEL
     );
 
