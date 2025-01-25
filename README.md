@@ -211,3 +211,9 @@ https://github.com/nvm-sh/nvm
 ```bash
 scp root@92.112.180.232:/var/www/blokeliai/scores.json .
 ```
+
+### Count unique sessions from access logs
+
+```bash
+awk '/\/play/ {print $1}' access.log | sort -u | wc -l
+```
