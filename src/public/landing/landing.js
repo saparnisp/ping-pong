@@ -1,5 +1,11 @@
+/**
+ * PONG LANDING PAGE
+ * Shows global queue and screen statuses
+ */
+
 let currentLanguage = "lt";
 let pollTimeout = null;
+let socket = null;
 
 // Create floating light particles
 function createParticles() {
@@ -27,8 +33,67 @@ function toggleLanguage() {
     currentLanguage === "lt" ? "EN" : "LT";
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const socket = io({
+/**
+ * Update screen statuses display
+ */
+function updateScreenStatuses(data) {
+  const { screens, queue } = data;
+
+  // Update global queue info
+  const queueLengthEl = document.getElementById("queue-length");
+  if (queueLengthEl) {
+    const queueText = currentLanguage === "lt"
+      ? `Žaidėjų eilėje: ${queue.queueLength}`
+      : `Players in queue: ${queue.queueLength}`;
+    queueLengthEl.textContent = queueText;
+  }
+
+  // Update screen statuses
+  const screensContainer = document.getElementById("screens-status");
+  if (screensContainer) {
+    screensContainer.innerHTML = "";
+
+    screens.forEach((screen) => {
+      const screenDiv = document.createElement("div");
+      screenDiv.className = "screen-status";
+
+      const screenNumber = screen.id.split("_")[1] || screen.id;
+      const title = document.createElement("h3");
+      title.textContent = `${currentLanguage === "lt" ? "Ekranas" : "Screen"} ${screenNumber}`;
+
+      const status = document.createElement("div");
+      status.className = "status-text";
+
+      if (!screen.displayConnected) {
+        status.textContent = currentLanguage === "lt" ? "Neprijungtas" : "Disconnected";
+        status.style.color = "#666";
+      } else if (screen.gameActive) {
+        status.textContent = currentLanguage === "lt"
+          ? "Žaidžiama..."
+          : "Game in progress...";
+        status.style.color = "#0f0";
+      } else if (screen.waitingForChallenger) {
+        status.textContent = currentLanguage === "lt"
+          ? "Laukia priešininko"
+          : "Waiting for challenger";
+        status.style.color = "#ff0";
+      } else {
+        status.textContent = currentLanguage === "lt" ? "Laisvas" : "Free";
+        status.style.color = "#0ff";
+      }
+
+      screenDiv.appendChild(title);
+      screenDiv.appendChild(status);
+      screensContainer.appendChild(screenDiv);
+    });
+  }
+}
+
+/**
+ * Connect to server
+ */
+function connectToServer() {
+  socket = io({
     transports: ["websocket", "polling"],
     reconnection: true,
     reconnectionAttempts: 5,
@@ -36,42 +101,38 @@ document.addEventListener("DOMContentLoaded", () => {
     timeout: 10000,
   });
 
+  socket.on("connect", () => {
+    console.log("Connected to server");
+    socket.emit("landingStats");
+  });
+
+  socket.on("displayStats", (data) => {
+    console.log("Display stats:", data);
+    updateScreenStatuses(data);
+  });
+
+  socket.on("screenStatuses", (data) => {
+    console.log("Screen statuses update:", data);
+    updateScreenStatuses(data);
+  });
+
+  // Poll for updates every 5 seconds
+  pollTimeout = setInterval(() => {
+    socket.emit("landingStats");
+  }, 5000);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
   // Initialize particles on load
   createParticles();
 
+  // Language switcher
   document
     .getElementById("language-switcher")
     .addEventListener("click", toggleLanguage);
 
-  socket.emit("landingConnect");
+  updateTexts();
 
-  socket.on("displayStats", (stats) => {
-    document.getElementById("button-grid").innerHTML = "";
-
-    stats.forEach((display) => {
-      const button = document.createElement("a");
-      button.className = "menu-button";
-      button.href = `/play?id=${display.id}`;
-      button.textContent = `Nr. ${display.id}`;
-
-      const stats = document.createElement("div");
-      stats.className = "menu-stats";
-      const lt = `Žaidėjų: ${display.stats.length}`;
-      const en = `Players: ${display.stats.length}`;
-      const phrase = { lt, en };
-
-      stats.setAttribute("data-lt", lt);
-      stats.setAttribute("data-en", en);
-
-      stats.textContent = phrase[currentLanguage];
-
-      button.appendChild(stats);
-
-      document.getElementById("button-grid").appendChild(button);
-    });
-  });
-
-  pollTimeout = setInterval(() => {
-    socket.emit("landingConnect");
-  }, 5000);
+  // Connect to server
+  connectToServer();
 });

@@ -19,15 +19,29 @@
       <h1>
         <img src="../assets/logo.png" alt="Šviesų Festivalis" width="240"/>
       </h1>
-      <h2 data-lt="Blokeliai" data-en="Blocks">Blokeliai</h2>
+      <h2 data-lt="PING PONG" data-en="PING PONG">PING PONG</h2>
       <p
         class="instruction"
-        data-lt="Pasirinkite kuriame lange žaisite"
-        data-en="Choose which screen to play on"
+        data-lt="Prisijunkite prie žaidimo ir laukite savo eilės"
+        data-en="Join the game and wait for your turn"
       >
-        Pasirinkite kuriame lange žaisite
+        Prisijunkite prie žaidimo ir laukite savo eilės
       </p>
-      <div id="button-grid"></div>
+
+      <div id="queue-length" class="queue-info" data-lt="Žaidėjų eilėje: 0" data-en="Players in queue: 0">
+        Žaidėjų eilėje: 0
+      </div>
+
+      <div id="screens-status" class="screens-container"></div>
+
+      <div class="button-container">
+        <a href="/play" class="menu-button play-button" data-lt="ŽAISTI" data-en="PLAY">
+          ŽAISTI
+        </a>
+        <a href="/scores" class="menu-button scores-button" data-lt="REZULTATAI" data-en="SCORES">
+          REZULTATAI
+        </a>
+      </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script type="module" src="landing/landing.js"></script>
