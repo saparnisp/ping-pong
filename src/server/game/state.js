@@ -60,7 +60,7 @@ const createInitialState = (
   };
 
   // Initialize ball direction
-  resetBall(initialState.ball, 1);
+  resetBall(initialState.ball, 1, 0);
 
   return initialState;
 };
@@ -131,7 +131,7 @@ function updateGamePlayers(id, winnerId, newPlayerId, winnerPosition = 1) {
     };
   }
 
-  resetBall(game.ball, 1);
+  resetBall(game.ball, 1, 0);
   game.gameActive = false;
   game.servingPlayer = 1;
   gameMovesHistory[id] = [];

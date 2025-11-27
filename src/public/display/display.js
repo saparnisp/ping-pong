@@ -242,7 +242,7 @@ function drawGameOver(winner) {
   ctx.fillStyle = "#FFF";
   ctx.shadowBlur = 0;
   ctx.fillText(
-    "Naujas priešininkas...",
+    "Laukiamas naujas priešininkas...",
     canvas.width / 2,
     canvas.height / 2 + scaleY(50)
   );

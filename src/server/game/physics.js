@@ -114,12 +114,16 @@ export function updateBall(gameState) {
  * @param {Object} ball - Ball object
  * @param {Number} servingPlayer - 1 or 2
  */
-export function resetBall(ball, servingPlayer = 1) {
+export function resetBall(ball, servingPlayer = 1, totalPoints = 0) {
   const { CANVAS_WIDTH, CANVAS_HEIGHT, BALL_INITIAL_SPEED } = PONG_CONFIG;
 
   ball.x = CANVAS_WIDTH / 2;
   ball.y = CANVAS_HEIGHT / 2;
-  ball.speed = BALL_INITIAL_SPEED;
+
+  // Progressive speed increase: Base speed + 1 per point
+  ball.speed = BALL_INITIAL_SPEED + (totalPoints * 1);
+
+  console.log(`🚀 Serve speed: ${ball.speed} (Points: ${totalPoints})`);
 
   // Random angle between -45° and 45°
   const angle = (Math.random() - 0.5) * (Math.PI / 3);
