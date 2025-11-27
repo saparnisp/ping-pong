@@ -104,7 +104,7 @@ function getScreenWithWaitingWinner() {
     if (game && game.winnerId && displayConnected) {
       // Winner waiting means: winnerId is set AND one of the player slots is empty (or will be filled)
       // Logic: Winner stays in their slot, loser's slot is available
-      
+
       // Check if P1 is winner and P2 is empty/needs challenger
       if (game.player1Id === game.winnerId && !game.player2Id) {
         console.log(`   ✅ FOUND waiting winner on ${screenId}: P1=${game.player1Id}`);
@@ -114,7 +114,7 @@ function getScreenWithWaitingWinner() {
           winnerPosition: 1,
           emptyPosition: 2,
         };
-      } 
+      }
       // Check if P2 is winner and P1 is empty/needs challenger
       else if (game.player2Id === game.winnerId && !game.player1Id) {
         console.log(`   ✅ FOUND waiting winner on ${screenId}: P2=${game.player2Id}`);
@@ -156,9 +156,9 @@ function getNextPair() {
       console.log(
         `🆚 REMATCH: Challenger ${challengerId} vs waiting winner (P${waitingWinner.winnerPosition}) on ${waitingWinner.screenId}`
       );
-      
+
       return {
-        winnerId: waitingWinner.winnerId, 
+        winnerId: waitingWinner.winnerId,
         challengerId: challengerId,
         winnerPosition: waitingWinner.winnerPosition,
         challengerPosition: waitingWinner.emptyPosition,
@@ -232,13 +232,20 @@ function handleGameOver(screenId, winnerId, loserId) {
   game.winnerId = winnerId;
 
   console.log(`✅ Game over on ${screenId}. Winner: ${winnerId} (waiting), Loser: ${loserId}`);
+  console.log(`   Game state before clear: P1=${game.player1Id}, P2=${game.player2Id}`);
 
   // Clear the losing player's slot ONLY
   if (game.player1Id === winnerId) {
+    console.log(`   Winner is P1, clearing P2 (${game.player2Id})`);
     game.player2Id = null; // Clear P2
   } else if (game.player2Id === winnerId) {
+    console.log(`   Winner is P2, clearing P1 (${game.player1Id})`);
     game.player1Id = null; // Clear P1
+  } else {
+    console.warn(`   ⚠️ Winner ID ${winnerId} does not match P1 (${game.player1Id}) or P2 (${game.player2Id})!`);
   }
+
+  console.log(`   Game state after clear: P1=${game.player1Id}, P2=${game.player2Id}`);
 
   // Return simple result
   return {
@@ -380,15 +387,15 @@ function clearQueue() {
  */
 function clearAllGames() {
   console.log(`🗑️ Clearing all games and queue`);
-  
+
   // Clear all active games
   for (const screenId in activeGames) {
     delete activeGames[screenId];
   }
-  
+
   // Clear queue
   clearQueue();
-  
+
   console.log(`   All games and queue cleared`);
 }
 

@@ -288,6 +288,13 @@ function startCountdown(screenId) {
 function handlePlayerConnect(socket) {
   console.log(`\n👤 ========== Player connected: ${socket.id} ==========`);
 
+  // Clear reconnect timer if exists (connection recovery)
+  if (reconnectTimers[socket.id]) {
+    console.log(`   Player reconnected! Clearing disconnect timer for ${socket.id}`);
+    clearTimeout(reconnectTimers[socket.id]);
+    delete reconnectTimers[socket.id];
+  }
+
   // Add to global queue
   addToQueue(socket.id);
 
@@ -343,13 +350,13 @@ function tryMatchPlayers() {
     // For rematch:
     // - pair.winnerId is MAIN namespace socket ID (stored in queue/activeGames)
     // - pair.challengerId is MAIN namespace socket ID (challenger is in queue)
-    
+
     const winnerMainSocketId = pair.winnerId;
     const challengerMainSocketId = pair.challengerId;
-    
+
     // We need to get winner's SCREEN socket ID to send them matchFound
     const winnerScreenSocketId = getScreenSocketId(winnerMainSocketId);
-    
+
     console.log(`   Winner: main=${winnerMainSocketId} screen=${winnerScreenSocketId || 'NOT FOUND'}`);
     console.log(`   Challenger: main=${challengerMainSocketId}`);
 
@@ -412,13 +419,13 @@ function handlePaddleMove(socket, { direction }) {
     // Try to find by game state player ID (legacy)
     const game = getGameForScreen(screenId);
     if (game) {
-        if (game.player1Id === socket.id) {
-            player = gameState.player1;
-        } else if (game.player2Id === socket.id) {
-            player = gameState.player2;
-        }
+      if (game.player1Id === socket.id) {
+        player = gameState.player1;
+      } else if (game.player2Id === socket.id) {
+        player = gameState.player2;
+      }
     }
-    
+
     if (!player) return;
   }
 
@@ -475,13 +482,13 @@ function handleDisplayConnect(socket) {
 
   // Check if display was already connected (reconnect scenario)
   const wasConnected = !!getDisplaySocket(screenId);
-  
+
   console.log(`📺 Display connected: ${screenId} (${wasConnected ? 'RECONNECT' : 'NEW CONNECTION'})`);
-  
+
   // If reconnect, clear entire queue and all games
   if (wasConnected) {
     console.log(`🔄 Display reconnected - clearing queue and resetting all games`);
-    
+
     // Clear all pending matches
     Object.keys(pendingMatches).forEach((matchId) => {
       const match = pendingMatches[matchId];
@@ -491,10 +498,10 @@ function handleDisplayConnect(socket) {
       delete pendingMatches[matchId];
     });
     console.log(`   Cleared all pending matches`);
-    
+
     // Clear all games and queue
     clearAllGames();
-    
+
     // Clear all game states
     const SCREEN_IDS = ["display_1", "display_2", "display_3"];
     SCREEN_IDS.forEach((id) => {
@@ -502,15 +509,15 @@ function handleDisplayConnect(socket) {
       clearGameLoop(id);
       clearServeTimer(id);
     });
-    
+
     // Notify all players that queue was reset
     io.emit("queueReset", {
       message: "Ekranas perkrautas. Eilė išvalyta.",
     });
-    
+
     console.log(`   ✅ Queue and games cleared, all players notified`);
   }
-  
+
   setDisplaySocket(screenId, socket);
 
   // Send game config
@@ -583,6 +590,23 @@ function handlePlayerReady(socket, { mainSocketId, playerNumber }) {
 
   console.log(`🎮 Player ready on ${screenId}: main=${mainSocketId} screen=${screenSocketId} P${playerNumber || '?'}`);
 
+  // Clear reconnect timer for this socket if exists
+  if (reconnectTimers[screenSocketId]) {
+    console.log(`   Clearing disconnect timer for screen socket ${screenSocketId}`);
+    clearTimeout(reconnectTimers[screenSocketId]);
+    delete reconnectTimers[screenSocketId];
+  }
+
+  // Also check if there's a timer for the OLD screen socket associated with this main socket
+  if (mainSocketId) {
+    const oldScreenSocketId = getScreenSocketId(mainSocketId);
+    if (oldScreenSocketId && oldScreenSocketId !== screenSocketId && reconnectTimers[oldScreenSocketId]) {
+      console.log(`   Clearing disconnect timer for OLD screen socket ${oldScreenSocketId}`);
+      clearTimeout(reconnectTimers[oldScreenSocketId]);
+      delete reconnectTimers[oldScreenSocketId];
+    }
+  }
+
   // Get game state and queue game FIRST
   const gameState = getCurrentGame(screenId);
   const game = getGameForScreen(screenId);
@@ -596,18 +620,18 @@ function handlePlayerReady(socket, { mainSocketId, playerNumber }) {
   // Check if game exists and playerNumber is provided
   if (game && gameState && playerNumber) {
     console.log(`🔄 Updating gameState for player ${playerNumber} with screen socket ID`);
-    
+
     // Check if this is a new match or rematch
     const isRematch = game.winnerId !== null && game.winnerId !== undefined;
-    
+
     if (isRematch) {
       // Rematch scenario - challenger just connected
       console.log(`🔄 Rematch: Challenger connected, updating gameState`);
-      
+
       // Determine winner position
       const winnerPosition = game.player1Id === game.winnerId ? 1 : 2;
       const challengerPosition = playerNumber;
-      
+
       // Update gameState with new challenger
       if (challengerPosition === 1) {
         gameState.player1 = {
@@ -626,7 +650,7 @@ function handlePlayerReady(socket, { mainSocketId, playerNumber }) {
           paddleVelocity: 0,
         };
       }
-      
+
       // Reset winner's score and position
       if (winnerPosition === 1) {
         gameState.player1.score = 0;
@@ -635,14 +659,14 @@ function handlePlayerReady(socket, { mainSocketId, playerNumber }) {
         gameState.player2.score = 0;
         gameState.player2.paddleY = PONG_CONFIG.CANVAS_HEIGHT / 2 - PONG_CONFIG.PADDLE_HEIGHT / 2;
       }
-      
+
       resetBall(gameState.ball, 1);
       gameState.gameActive = false;
       gameState.servingPlayer = 1;
     } else {
       // New match - update gameState with screen socket ID
       console.log(`🔄 New match: Updating gameState for player ${playerNumber}`);
-      
+
       // Use playerNumber as the primary identifier (sent from client via matchFound)
       if (playerNumber === 1) {
         // Update player1 with screen socket ID
@@ -657,12 +681,12 @@ function handlePlayerReady(socket, { mainSocketId, playerNumber }) {
         }
         gameState.player1.id = mainSocketId || screenSocketId;
         gameState.player1.socketId = screenSocketId;
-        
+
         // Ensure score is 0 if game hasn't started yet
         if (!gameState.gameActive) {
-            gameState.player1.score = 0;
+          gameState.player1.score = 0;
         }
-        
+
         console.log(`   ✅ Updated player1: id=${gameState.player1.id} socketId=${gameState.player1.socketId}`);
       } else if (playerNumber === 2) {
         // Update player2 with screen socket ID
@@ -677,26 +701,26 @@ function handlePlayerReady(socket, { mainSocketId, playerNumber }) {
         }
         gameState.player2.id = mainSocketId || screenSocketId;
         gameState.player2.socketId = screenSocketId;
-        
+
         // Ensure score is 0 if game hasn't started yet
         if (!gameState.gameActive) {
-            gameState.player2.score = 0;
+          gameState.player2.score = 0;
         }
 
         console.log(`   ✅ Updated player2: id=${gameState.player2.id} socketId=${gameState.player2.socketId}`);
       } else {
         console.error(`   ❌ Invalid playerNumber: ${playerNumber}`);
       }
-      
+
       // Check if both players are now connected (for new matches)
       // Both players should have screen socket IDs set
       if (gameState.player1 && gameState.player1.socketId && gameState.player2 && gameState.player2.socketId) {
         console.log(`✅ Both players connected! Player1: ${gameState.player1.socketId}, Player2: ${gameState.player2.socketId}`);
-        
+
         // Check if countdown hasn't started yet (game not active)
         if (!gameState.gameActive) {
           console.log(`   ✅ Both players ready - starting countdown for new match...`);
-          
+
           // Start countdown after short delay
           setTimeout(() => {
             console.log(`   🎬 Calling startCountdown for ${screenId}...`);
@@ -770,12 +794,7 @@ function handleDisconnect(socket) {
       // This is a main namespace socket disconnecting
       console.log(`  Main namespace disconnect - removing from queue`);
 
-      // Cancel any pending loser confirmation timer
-      if (loserConfirmTimers[socket.id]) {
-        clearTimeout(loserConfirmTimers[socket.id]);
-        delete loserConfirmTimers[socket.id];
-        console.log(`  Cancelled loser confirmation timer`);
-      }
+
 
       removePlayer(socket.id);
       broadcastQueueStatus();
@@ -903,7 +922,7 @@ function createPendingMatch(player1Id, player2Id, screenId, isRematch = false, w
     const nsp = io.of(`/${screenId}`);
     const winnerSocketId = winnerScreenSocketId;
     const challengerSocketId = challengerMainSocketId;
-    
+
     // Send to winner (SCREEN namespace)
     console.log(`📤 Sending matchFound to winner via screen namespace: ${winnerSocketId}`);
     nsp.to(winnerSocketId).emit("matchFound", {
@@ -923,7 +942,7 @@ function createPendingMatch(player1Id, player2Id, screenId, isRematch = false, w
         playerNumber: winnerPosition,
       });
     }
-    
+
     // Send to challenger (MAIN namespace)
     console.log(`📤 Sending matchFound to challenger via main namespace: ${challengerSocketId}`);
     io.to(challengerSocketId).emit("matchFound", {
@@ -971,9 +990,9 @@ function handlePlayerConfirmed(socket) {
   // Find which pending match this player is in
   // Check player1Id, player2Id (main socket IDs) OR winnerScreenSocketId (rematch)
   const matchEntry = Object.values(pendingMatches).find(
-    (match) => 
-      match.player1Id === mainId || 
-      match.player2Id === mainId || 
+    (match) =>
+      match.player1Id === mainId ||
+      match.player2Id === mainId ||
       (match.isRematch && match.winnerScreenSocketId === screenId) ||
       (match.isRematch && match.winnerScreenSocketId === playerId)
   );
@@ -992,7 +1011,7 @@ function handlePlayerConfirmed(socket) {
   if (matchEntry.player1Id === mainId || (matchEntry.isRematch && matchEntry.winnerPosition === 1 && (matchEntry.winnerScreenSocketId === playerId || matchEntry.winnerScreenSocketId === screenId))) {
     matchEntry.player1Confirmed = true;
     console.log(`   Player 1 confirmed`);
-  } 
+  }
   // Check if player matches player2 (main ID) OR winnerScreenSocketId (if winner is P2)
   else if (matchEntry.player2Id === mainId || (matchEntry.isRematch && matchEntry.winnerPosition === 2 && (matchEntry.winnerScreenSocketId === playerId || matchEntry.winnerScreenSocketId === screenId))) {
     matchEntry.player2Confirmed = true;
@@ -1020,136 +1039,136 @@ function checkBothPlayersReady(matchId) {
     console.log(`   Player 2: ${match.player2Confirmed ? '✅' : '⏳'}`);
 
     if (match.player1Confirmed && match.player2Confirmed) {
-    console.log(`✅✅ Both players confirmed! Starting game...`);
+      console.log(`✅✅ Both players confirmed! Starting game...`);
 
-    // Cancel timeout timer
-    if (match.timer) {
-      clearTimeout(match.timer);
-      match.timer = null;
-    }
-
-    // Notify both players that match is starting
-    if (match.isRematch && match.winnerScreenSocketId && match.challengerMainSocketId) {
-      // Rematch: Send to winner via screen namespace, challenger via main namespace
-      const nsp = io.of(`/${match.screenId}`);
-      // Use stored winnerScreenSocketId for screen namespace communication
-      const winnerSocketId = match.winnerScreenSocketId;
-      const challengerSocketId = match.winnerPosition === 1 ? match.player2Id : match.player1Id;
-      
-      nsp.to(winnerSocketId).emit("bothPlayersReady", {
-        screenId: match.screenId,
-        playerNumber: match.winnerPosition,
-      });
-      
-      io.to(challengerSocketId).emit("bothPlayersReady", {
-        screenId: match.screenId,
-        playerNumber: match.winnerPosition === 1 ? 2 : 1,
-      });
-    } else {
-      // New match: Both in main namespace
-      io.to(match.player1Id).emit("bothPlayersReady", {
-        screenId: match.screenId,
-        playerNumber: 1,
-      });
-
-      io.to(match.player2Id).emit("bothPlayersReady", {
-        screenId: match.screenId,
-        playerNumber: 2,
-      });
-    }
-
-    // Create game and start countdown
-    if (match.isRematch) {
-      // Rematch - update existing game
-      const game = getGameForScreen(match.screenId);
-      const nsp = io.of(`/${match.screenId}`);
-
-      if (!game) {
-         console.error(`❌ Rematch error: Game not found for screen ${match.screenId}`);
-         cancelMatchConfirmation(matchId, "Game error");
-         return;
+      // Cancel timeout timer
+      if (match.timer) {
+        clearTimeout(match.timer);
+        match.timer = null;
       }
 
-      // Update queue game with challenger (main socket ID for now)
-      // The challenger will connect to screen namespace and updatePlayerSocketId will update this
-      if (match.winnerPosition === 1) {
-        game.player2Id = match.player2Id; // Challenger main socket ID (will be updated when they connect)
+      // Notify both players that match is starting
+      if (match.isRematch && match.winnerScreenSocketId && match.challengerMainSocketId) {
+        // Rematch: Send to winner via screen namespace, challenger via main namespace
+        const nsp = io.of(`/${match.screenId}`);
+        // Use stored winnerScreenSocketId for screen namespace communication
+        const winnerSocketId = match.winnerScreenSocketId;
+        const challengerSocketId = match.winnerPosition === 1 ? match.player2Id : match.player1Id;
+
+        nsp.to(winnerSocketId).emit("bothPlayersReady", {
+          screenId: match.screenId,
+          playerNumber: match.winnerPosition,
+        });
+
+        io.to(challengerSocketId).emit("bothPlayersReady", {
+          screenId: match.screenId,
+          playerNumber: match.winnerPosition === 1 ? 2 : 1,
+        });
       } else {
-        game.player1Id = match.player1Id; // Challenger main socket ID (will be updated when they connect)
+        // New match: Both in main namespace
+        io.to(match.player1Id).emit("bothPlayersReady", {
+          screenId: match.screenId,
+          playerNumber: 1,
+        });
+
+        io.to(match.player2Id).emit("bothPlayersReady", {
+          screenId: match.screenId,
+          playerNumber: 2,
+        });
       }
 
-      game.winnerId = null;
-      game.startedAt = Date.now();
+      // Create game and start countdown
+      if (match.isRematch) {
+        // Rematch - update existing game
+        const game = getGameForScreen(match.screenId);
+        const nsp = io.of(`/${match.screenId}`);
 
-      // NOTE: gameState will be updated when challenger connects via handlePlayerReady
-      // For now, just reset the winner's score and position
-      const gameState = getCurrentGame(match.screenId);
-      if (gameState) {
-        // Reset winner's score but keep their position
-        // Also ensure the other player's score is 0 (for the new challenger)
-        if (match.winnerPosition === 1) {
-          gameState.player1.score = 0;
-          gameState.player1.paddleY = PONG_CONFIG.CANVAS_HEIGHT / 2 - PONG_CONFIG.PADDLE_HEIGHT / 2;
-          if (gameState.player2) gameState.player2.score = 0;
-        } else {
-          gameState.player2.score = 0;
-          gameState.player2.paddleY = PONG_CONFIG.CANVAS_HEIGHT / 2 - PONG_CONFIG.PADDLE_HEIGHT / 2;
-          if (gameState.player1) gameState.player1.score = 0;
+        if (!game) {
+          console.error(`❌ Rematch error: Game not found for screen ${match.screenId}`);
+          cancelMatchConfirmation(matchId, "Game error");
+          return;
         }
-        // Reset ball
-        resetBall(gameState.ball, 1);
-        gameState.gameActive = false;
-        gameState.servingPlayer = 1;
+
+        // Update queue game with challenger (main socket ID for now)
+        // The challenger will connect to screen namespace and updatePlayerSocketId will update this
+        if (match.winnerPosition === 1) {
+          game.player2Id = match.player2Id; // Challenger main socket ID (will be updated when they connect)
+        } else {
+          game.player1Id = match.player1Id; // Challenger main socket ID (will be updated when they connect)
+        }
+
+        game.winnerId = null;
+        game.startedAt = Date.now();
+
+        // NOTE: gameState will be updated when challenger connects via handlePlayerReady
+        // For now, just reset the winner's score and position
+        const gameState = getCurrentGame(match.screenId);
+        if (gameState) {
+          // Reset winner's score but keep their position
+          // Also ensure the other player's score is 0 (for the new challenger)
+          if (match.winnerPosition === 1) {
+            gameState.player1.score = 0;
+            gameState.player1.paddleY = PONG_CONFIG.CANVAS_HEIGHT / 2 - PONG_CONFIG.PADDLE_HEIGHT / 2;
+            if (gameState.player2) gameState.player2.score = 0;
+          } else {
+            gameState.player2.score = 0;
+            gameState.player2.paddleY = PONG_CONFIG.CANVAS_HEIGHT / 2 - PONG_CONFIG.PADDLE_HEIGHT / 2;
+            if (gameState.player1) gameState.player1.score = 0;
+          }
+          // Reset ball
+          resetBall(gameState.ball, 1);
+          gameState.gameActive = false;
+          gameState.servingPlayer = 1;
+        }
+
+        console.log(`🆚 Rematch starting on ${match.screenId}`);
+
+        // Start countdown after short delay for reconnection
+        setTimeout(() => {
+          startCountdown(match.screenId);
+        }, 2000);
+
+      } else {
+        // New match - create game
+        const screenId = assignPairToScreen(match.player1Id, match.player2Id, match.screenId);
+
+        if (!screenId) {
+          console.log("❌ No available screens - cancelling match");
+          cancelMatchConfirmation(matchId, "No available screens");
+          return;
+        }
+
+        console.log(`👥 New match starting on ${screenId}`);
+
+        // Create game with main socket IDs (will be updated when players connect to screen namespace)
+        // Note: createNewGame uses main socket ID for now, but gameState will be updated 
+        // when players connect via handlePlayerReady
+        createNewGame(screenId, match.player1Id, match.player2Id);
+
+        // Initialize gameState with null socket IDs - they will be set when players connect
+        const gameState = getCurrentGame(screenId);
+        if (gameState) {
+          // Set socketId to null initially - will be updated when players connect
+          gameState.player1.socketId = null;
+          gameState.player2.socketId = null;
+          console.log(`   Initialized gameState with null socket IDs - waiting for players to connect`);
+        }
+
+        // Don't start countdown immediately - wait for both players to connect to screen namespace
+        // They will connect when they receive bothPlayersReady event
+        // Countdown will start automatically when both players send playerReady
+        console.log(`   Waiting for both players to connect to screen namespace...`);
       }
 
-      console.log(`🆚 Rematch starting on ${match.screenId}`);
+      // Remove from pending matches
+      delete pendingMatches[matchId];
+      console.log(`🗑️ Match ${matchId} removed from pending matches`);
 
-      // Start countdown after short delay for reconnection
-      setTimeout(() => {
-        startCountdown(match.screenId);
-      }, 2000);
-
+      // Update queue status
+      broadcastQueueStatus();
     } else {
-      // New match - create game
-      const screenId = assignPairToScreen(match.player1Id, match.player2Id, match.screenId);
-
-      if (!screenId) {
-        console.log("❌ No available screens - cancelling match");
-        cancelMatchConfirmation(matchId, "No available screens");
-        return;
-      }
-
-      console.log(`👥 New match starting on ${screenId}`);
-
-      // Create game with main socket IDs (will be updated when players connect to screen namespace)
-      // Note: createNewGame uses main socket ID for now, but gameState will be updated 
-      // when players connect via handlePlayerReady
-      createNewGame(screenId, match.player1Id, match.player2Id);
-      
-      // Initialize gameState with null socket IDs - they will be set when players connect
-      const gameState = getCurrentGame(screenId);
-      if (gameState) {
-        // Set socketId to null initially - will be updated when players connect
-        gameState.player1.socketId = null;
-        gameState.player2.socketId = null;
-        console.log(`   Initialized gameState with null socket IDs - waiting for players to connect`);
-      }
-
-      // Don't start countdown immediately - wait for both players to connect to screen namespace
-      // They will connect when they receive bothPlayersReady event
-      // Countdown will start automatically when both players send playerReady
-      console.log(`   Waiting for both players to connect to screen namespace...`);
+      console.log(`⏳ Waiting for other player...`);
     }
-
-    // Remove from pending matches
-    delete pendingMatches[matchId];
-    console.log(`🗑️ Match ${matchId} removed from pending matches`);
-
-    // Update queue status
-    broadcastQueueStatus();
-  } else {
-    console.log(`⏳ Waiting for other player...`);
-  }
   } catch (error) {
     console.error(`❌ Error in checkBothPlayersReady:`, error);
     // Try to cleanup if possible
@@ -1186,7 +1205,7 @@ function cancelMatchConfirmation(matchId, reason) {
     const nsp = io.of(`/${match.screenId}`);
     const winnerSocketId = match.winnerPosition === 1 ? match.player1Id : match.player2Id;
     const challengerSocketId = match.winnerPosition === 1 ? match.player2Id : match.player1Id;
-    
+
     nsp.to(winnerSocketId).emit("matchCancelled", { reason: message });
     io.to(challengerSocketId).emit("matchCancelled", { reason: message });
   } else {

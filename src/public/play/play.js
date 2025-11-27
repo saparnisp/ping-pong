@@ -26,6 +26,8 @@ let gameEndReceived = false; // Track if gameEnd event was received
 // Confirmation countdown
 let confirmCountdownTimer = null;
 let confirmCountdownValue = 10;
+let loserCountdownTimer = null;
+let loserCountdownValue = 5;
 
 /**
  * Update UI texts based on language
@@ -132,6 +134,53 @@ function stopConfirmationCountdown() {
 }
 
 /**
+ * Start loser countdown (5s to redirect)
+ */
+function startLoserCountdown() {
+  console.log("⏱️ Starting loser countdown");
+
+  loserCountdownValue = 5;
+  const timerElement = document.getElementById("loserCountdownTimer");
+
+  if (timerElement) {
+    timerElement.textContent = loserCountdownValue;
+  }
+
+  // Clear any existing timer
+  if (loserCountdownTimer) {
+    clearInterval(loserCountdownTimer);
+  }
+
+  loserCountdownTimer = setInterval(() => {
+    loserCountdownValue--;
+    console.log(`  ⏰ Loser countdown: ${loserCountdownValue}`);
+
+    if (timerElement) {
+      timerElement.textContent = loserCountdownValue;
+    }
+
+    if (loserCountdownValue <= 0) {
+      clearInterval(loserCountdownTimer);
+      loserCountdownTimer = null;
+
+      // Time's up - redirect to landing
+      console.log("⏰ Loser countdown expired, redirecting to landing");
+      window.location.href = "/";
+    }
+  }, 1000);
+}
+
+/**
+ * Stop loser countdown
+ */
+function stopLoserCountdown() {
+  if (loserCountdownTimer) {
+    clearInterval(loserCountdownTimer);
+    loserCountdownTimer = null;
+  }
+}
+
+/**
  * Show winner screen
  */
 function showWinnerScreen(finalScore) {
@@ -179,9 +228,7 @@ function showLoserScreen(finalScore) {
       scoreElement.textContent = scoreText;
       console.log("  ✅ Updated score:", scoreText);
     }
-    
-    // DISCONNECT IMMEDIATELY to prevent accidental rejoin
-    console.log("🔌 Disconnecting loser immediately...");
+
     if (screenSocket) {
       screenSocket.disconnect();
       screenSocket = null;
@@ -191,6 +238,9 @@ function showLoserScreen(finalScore) {
       // Don't set socket to null here as handlePlayButtonClick might check it, 
       // but connection is closed.
     }
+
+    // Start countdown to auto-redirect
+    startLoserCountdown();
   } else {
     console.error("  ❌ ERROR: loserScreen element not found!");
   }
@@ -231,6 +281,8 @@ function handleConfirmReadyClick() {
  */
 function handlePlayButtonClick() {
   console.log("✅ Play button clicked - redirecting to main page");
+
+  stopLoserCountdown();
 
   // Disconnect from screen namespace
   if (screenSocket) {
@@ -381,13 +433,13 @@ function connectToServer() {
 
   socket.on("queueReset", (data) => {
     console.log("🔄 Queue reset:", data.message);
-    
+
     // Reset queue display
     updateQueueDisplay(null, 0);
-    
+
     // Show waiting screen
     showWaitingScreen();
-    
+
     // Alert user
     alert(data.message);
   });
@@ -477,14 +529,14 @@ function connectToScreen(screenId) {
       // Check if loser/winner screens are already showing
       const loserShowing = loserScreen && loserScreen.style.display === "flex";
       const winnerShowing = winnerScreen && winnerScreen.style.display === "flex";
-      
+
       if (!loserShowing && !winnerShowing) {
         // Check if someone reached WIN_SCORE
         const WIN_SCORE = 5; // From PONG_CONFIG
         if (newGameState.player1 && newGameState.player2) {
           const player1Won = newGameState.player1.score >= WIN_SCORE;
           const player2Won = newGameState.player2.score >= WIN_SCORE;
-          
+
           if (player1Won || player2Won) {
             console.log("⚠️ Game stopped without gameEnd event, but winner found!");
             const isWinner = (playerNumber === 1 && player1Won) || (playerNumber === 2 && player2Won);
@@ -492,14 +544,14 @@ function connectToScreen(screenId) {
               player1: newGameState.player1.score,
               player2: newGameState.player2.score
             };
-            
+
             console.log(`🎮 Game over detected via fallback: Winner=${isWinner ? 'YOU' : 'OPPONENT'}`);
             gameEndReceived = true; // Mark as received to prevent duplicate handling
-            
+
             if (controls) {
               controls.setPlaying(false);
             }
-            
+
             if (isWinner) {
               showWinnerScreen(finalScore);
             } else {
