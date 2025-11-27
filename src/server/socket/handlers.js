@@ -16,23 +16,22 @@ import {
 } from "../game/physics.js";
 import { addScore } from "../game/scores.js";
 import {
-  addToQueue,
+  joinScreenQueue,
   removePlayer,
-  getNextPair,
-  assignPairToScreen,
-  getAvailableScreen,
+  getNextPairForScreen,
   handleGameOver as queueHandleGameOver,
   getGameForScreen,
   getScreenForPlayer,
   setDisplaySocket,
   getDisplaySocket,
   getAllScreenStatuses,
-  getGlobalQueueStatus,
   getQueuePosition,
-  getScreenWithWaitingWinner,
+  getQueueLength,
+  getQueuedPlayers,
   clearScreen,
   clearQueue,
   clearAllGames,
+  createNewGame as queueCreateNewGame,
 } from "../game/queue.js";
 import { PONG_CONFIG, RECONNECT_WAIT } from "../../config.js";
 import {
@@ -226,9 +225,9 @@ async function handlePongGameOver(screenId, result) {
   // Update global queue status for all players
   broadcastQueueStatus();
 
-  // Try to match winner with anyone currently in queue
-  console.log(`🔄 Calling tryMatchPlayers to check for immediate match...`);
-  tryMatchPlayers();
+  // Try to match winner with anyone currently in queue for THIS screen
+  console.log(`🔄 Calling tryMatchOnScreen to check for immediate match on ${screenId}...`);
+  tryMatchOnScreen(screenId);
 }
 
 /**
@@ -285,6 +284,9 @@ function startCountdown(screenId) {
 /**
  * Handle player connecting
  */
+/**
+ * Handle player connecting
+ */
 function handlePlayerConnect(socket) {
   console.log(`\n👤 ========== Player connected: ${socket.id} ==========`);
 
@@ -295,44 +297,56 @@ function handlePlayerConnect(socket) {
     delete reconnectTimers[socket.id];
   }
 
-  // Add to global queue
-  addToQueue(socket.id);
-
-  // Send queue position
-  const position = getQueuePosition(socket.id);
-  const queueStatus = getGlobalQueueStatus();
-
-  console.log(`   Added to queue position: ${position}`);
-  console.log(`   Total queue length: ${queueStatus.queueLength}`);
-
-  socket.emit("queueUpdate", {
-    position,
-    queueLength: queueStatus.queueLength,
-  });
-
-  // Broadcast updated queue status
-  broadcastQueueStatus();
-
-  // Try to match players
-  console.log(`   Attempting to match players...`);
-  tryMatchPlayers();
+  // DO NOT auto-add to queue. Wait for joinScreen.
+  console.log(`   Player connected, waiting for screen selection...`);
   console.log("=================================================\n");
 }
 
 /**
- * Try to match players from queue
- * PRIORITY 1: Match with waiting winners (rematch)
- * PRIORITY 2: Match two new players
- *
- * NOW REQUIRES CONFIRMATION: Creates pending match, both players must confirm within 10s
+ * Handle player joining a specific screen queue
  */
-function tryMatchPlayers() {
-  console.log("\n🔄 ========== tryMatchPlayers called ==========");
+function handleJoinScreen(socket, screenId) {
+  console.log(`\n👤 ========== Player ${socket.id} joining screen ${screenId} ==========`);
 
-  const pair = getNextPair();
+  // Add to specific screen queue
+  const added = joinScreenQueue(screenId, socket.id);
+
+  if (added) {
+    // Send queue position
+    const position = getQueuePosition(screenId, socket.id);
+    const queueLength = getQueueLength(screenId);
+
+    console.log(`   Added to queue position: ${position}`);
+    console.log(`   Queue length for ${screenId}: ${queueLength}`);
+
+    socket.emit("queueUpdate", {
+      position,
+      queueLength,
+      screenId
+    });
+
+    // Broadcast updated queue status
+    broadcastQueueStatus();
+
+    // Try to match players on THIS screen
+    console.log(`   Attempting to match players on ${screenId}...`);
+    tryMatchOnScreen(screenId);
+  } else {
+    console.log(`   Failed to add to queue (already in queue?)`);
+  }
+  console.log("=================================================\n");
+}
+
+/**
+ * Try to match players for a specific screen
+ */
+function tryMatchOnScreen(screenId) {
+  console.log(`\n🔄 ========== tryMatchOnScreen called for ${screenId} ==========`);
+
+  const pair = getNextPairForScreen(screenId);
 
   if (!pair) {
-    console.log("❌ No match possible - not enough players or no waiting winners");
+    console.log("❌ No match possible on this screen");
     console.log("============================================\n");
     return;
   }
@@ -341,15 +355,9 @@ function tryMatchPlayers() {
 
   if (pair.isRematch) {
     // Rematch with waiting winner
-    const screenId = pair.screenId;
-
     console.log(
       `🆚 Rematch on ${screenId}: Winner (P${pair.winnerPosition}) vs Challenger (P${pair.challengerPosition})`
     );
-
-    // For rematch:
-    // - pair.winnerId is MAIN namespace socket ID (stored in queue/activeGames)
-    // - pair.challengerId is MAIN namespace socket ID (challenger is in queue)
 
     const winnerMainSocketId = pair.winnerId;
     const challengerMainSocketId = pair.challengerId;
@@ -365,54 +373,39 @@ function tryMatchPlayers() {
 
       // FIX: Handle this gracefully
       // 1. Return challenger to queue (at the front)
-      addToQueue(challengerMainSocketId);
+      joinScreenQueue(screenId, challengerMainSocketId);
       console.log(`   ➕ Returned challenger ${challengerMainSocketId} to queue`);
 
       // 2. Remove the zombie winner from the game/queue to prevent blocking
-      // We need to find which game they are in and clear it
       const game = getGameForScreen(screenId);
       if (game) {
         console.log(`   🗑️ Clearing zombie winner from screen ${screenId}`);
-        // Clear the winnerId so the screen becomes available or waits for new players
         game.winnerId = null;
-        // Also clear the player slot
         if (game.player1Id === winnerMainSocketId) game.player1Id = null;
         if (game.player2Id === winnerMainSocketId) game.player2Id = null;
 
-        // If both empty, clear game completely
         if (!game.player1Id && !game.player2Id) {
           clearScreen(screenId);
         }
       }
 
       // 3. Try matching again immediately
-      setTimeout(tryMatchPlayers, 100);
+      setTimeout(() => tryMatchOnScreen(screenId), 100);
       return;
     }
 
-    // Create pending match - use main socket IDs for tracking, but screen socket ID for winner communication
-    // IMPORTANT: player1Id/player2Id in pending match should be MAIN socket IDs for consistency with queue
+    // Create pending match
     const player1Id = pair.winnerPosition === 1 ? winnerMainSocketId : challengerMainSocketId;
     const player2Id = pair.winnerPosition === 2 ? winnerMainSocketId : challengerMainSocketId;
 
     createPendingMatch(player1Id, player2Id, screenId, true, pair.winnerPosition, winnerScreenSocketId, challengerMainSocketId, winnerMainSocketId);
 
   } else {
-    // New match - get available screen first
-    const availableScreen = getAvailableScreen();
-
-    if (!availableScreen) {
-      console.log("❌ No available screens - returning players to queue");
-      // Return players to queue (they were removed by getNextPair)
-      addToQueue(pair.player1Id);
-      addToQueue(pair.player2Id);
-      return;
-    }
-
-    console.log(`👥 New match on ${availableScreen}: ${pair.player1Id} vs ${pair.player2Id}`);
+    // New match
+    console.log(`👥 New match on ${screenId}: ${pair.player1Id} vs ${pair.player2Id}`);
 
     // Create pending match requiring confirmation
-    createPendingMatch(pair.player1Id, pair.player2Id, availableScreen, false);
+    createPendingMatch(pair.player1Id, pair.player2Id, screenId, false);
   }
 
   console.log("============================================\n");
@@ -581,14 +574,14 @@ function handleDisplayDisconnect(socket) {
     const mainId2 = getMainSocketId(game.player2Id) || game.player2Id;
 
     if (mainId1) {
-      addToQueue(mainId1);
+      joinScreenQueue(screenId, mainId1);
       io.to(mainId1).emit("displayDisconnected", {
         message: "Ekranas atsijungė. Grįžtate į eilę.",
       });
     }
 
     if (mainId2) {
-      addToQueue(mainId2);
+      joinScreenQueue(screenId, mainId2);
       io.to(mainId2).emit("displayDisconnected", {
         message: "Ekranas atsijungė. Grįžtate į eilę.",
       });
@@ -799,7 +792,7 @@ function handleDisconnect(socket) {
         clearGameLoop(screenId);
         clearServeTimer(screenId);
         broadcastQueueStatus();
-        tryMatchPlayers();
+        tryMatchOnScreen(screenId);
       }
     }, RECONNECT_WAIT);
   } else {
@@ -878,28 +871,36 @@ function handleReconnect(socket) {
  */
 function handleLandingStats(socket) {
   const screenStatuses = getAllScreenStatuses();
-  const queueStatus = getGlobalQueueStatus();
+  // No global queue anymore
+  // const queueStatus = getGlobalQueueStatus();
 
   socket.emit("displayStats", {
     screens: screenStatuses,
-    queue: queueStatus,
+    // queue: queueStatus,
   });
 }
 
 /**
  * Broadcast queue status to all players
  */
+/**
+ * Broadcast queue status to all players
+ */
 function broadcastQueueStatus() {
-  const queueStatus = getGlobalQueueStatus();
-
-  // Notify all players in queue of their position
-  io.emit("queueStatus", queueStatus);
-
-  // Update landing page
+  // 1. Update landing page (all screens status)
   const screenStatuses = getAllScreenStatuses();
-  io.emit("screenStatuses", {
-    screens: screenStatuses,
-    queue: queueStatus,
+  io.emit("screenStatuses", { screens: screenStatuses });
+
+  // 2. Update individual players in queues
+  screenStatuses.forEach(screen => {
+    const players = getQueuedPlayers(screen.id);
+    players.forEach((playerId, index) => {
+      io.to(playerId).emit("queueUpdate", {
+        position: index + 1,
+        queueLength: players.length,
+        screenId: screen.id
+      });
+    });
   });
 }
 
@@ -1153,20 +1154,16 @@ function checkBothPlayersReady(matchId) {
 
       } else {
         // New match - create game
-        const screenId = assignPairToScreen(match.player1Id, match.player2Id, match.screenId);
-
-        if (!screenId) {
-          console.log("❌ No available screens - cancelling match");
-          cancelMatchConfirmation(matchId, "No available screens");
-          return;
-        }
+        const screenId = match.screenId;
 
         console.log(`👥 New match starting on ${screenId}`);
 
         // Create game with main socket IDs (will be updated when players connect to screen namespace)
-        // Note: createNewGame uses main socket ID for now, but gameState will be updated 
-        // when players connect via handlePlayerReady
+        // 1. Initialize game state (physics, scores)
         createNewGame(screenId, match.player1Id, match.player2Id);
+
+        // 2. Register game in queue system (locks the screen)
+        queueCreateNewGame(screenId, match.player1Id, match.player2Id);
 
         // Initialize gameState with null socket IDs - they will be set when players connect
         const gameState = getCurrentGame(screenId);
@@ -1255,8 +1252,8 @@ function cancelMatchConfirmation(matchId, reason) {
     const challengerConfirmed = match.winnerPosition === 1 ? match.player2Confirmed : match.player1Confirmed;
 
     if (challengerConfirmed) {
-      addToQueue(challengerId);
-      console.log(`  ➕ Returned confirmed challenger ${challengerId} to queue`);
+      joinScreenQueue(match.screenId, challengerId);
+      console.log(`  ➕ Returned confirmed challenger ${challigerId} to queue for ${match.screenId}`);
     } else {
       console.log(`  ⛔ Challenger ${challengerId} failed to confirm - dropping from queue`);
       io.to(challengerId).emit("matchCancelled", { reason: "Nepatvirtinote dalyvavimo - buvote pašalintas iš eilės" });
@@ -1269,16 +1266,16 @@ function cancelMatchConfirmation(matchId, reason) {
   } else {
     // New match - check each player
     if (match.player1Confirmed) {
-      addToQueue(match.player1Id);
-      console.log(`  ➕ Returned confirmed Player 1 (${match.player1Id}) to queue`);
+      joinScreenQueue(match.screenId, match.player1Id);
+      console.log(`  ➕ Returned confirmed Player 1 (${match.player1Id}) to queue for ${match.screenId}`);
     } else {
       console.log(`  ⛔ Player 1 (${match.player1Id}) failed to confirm - dropping from queue`);
       io.to(match.player1Id).emit("matchCancelled", { reason: "Nepatvirtinote dalyvavimo - buvote pašalintas iš eilės" });
     }
 
     if (match.player2Confirmed) {
-      addToQueue(match.player2Id);
-      console.log(`  ➕ Returned confirmed Player 2 (${match.player2Id}) to queue`);
+      joinScreenQueue(match.screenId, match.player2Id);
+      console.log(`  ➕ Returned confirmed Player 2 (${match.player2Id}) to queue for ${match.screenId}`);
     } else {
       console.log(`  ⛔ Player 2 (${match.player2Id}) failed to confirm - dropping from queue`);
       io.to(match.player2Id).emit("matchCancelled", { reason: "Nepatvirtinote dalyvavimo - buvote pašalintas iš eilės" });
@@ -1292,7 +1289,7 @@ function cancelMatchConfirmation(matchId, reason) {
   broadcastQueueStatus();
 
   // Try matching again
-  tryMatchPlayers();
+  tryMatchOnScreen(match.screenId);
 }
 
 /**
@@ -1306,6 +1303,7 @@ const setup = (server) => {
     console.log("Socket connected to main namespace:", socket.id);
 
     socket.on("playerConnect", () => handlePlayerConnect(socket));
+    socket.on("joinScreen", (data) => handleJoinScreen(socket, data.screenId));
     socket.on("playerConfirmed", () => handlePlayerConfirmed(socket));
     socket.on("landingStats", () => handleLandingStats(socket));
     socket.on("disconnect", () => handleDisconnect(socket));
@@ -1379,6 +1377,5 @@ export {
   handleDisconnect,
   handleReconnect,
   handleLandingStats,
-  tryMatchPlayers,
   broadcastQueueStatus,
 };

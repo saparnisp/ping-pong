@@ -382,7 +382,19 @@ function connectToServer() {
 
   socket.on("connect", () => {
     console.log("Connected to server:", socket.id);
-    socket.emit("playerConnect");
+
+    // Get screen ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetScreenId = urlParams.get("screen");
+
+    if (targetScreenId) {
+      console.log(`Joining screen queue: ${targetScreenId}`);
+      socket.emit("joinScreen", { screenId: targetScreenId });
+    } else {
+      console.error("No screen specified in URL!");
+      alert("Nepasirinktas ekranas! Grįžkite į pagrindinį puslapį.");
+      window.location.href = "/";
+    }
   });
 
   socket.on("queueUpdate", (data) => {

@@ -1,13 +1,16 @@
 /**
  * GLOBAL QUEUE SYSTEM FOR PONG
- * - Single global queue for all players
- * - Automatic pairing of first two players
- * - Auto-assignment to available screens
- * - Winner stays, loser returns to queue
+ * - Per-screen queues
+ * - Manual selection of screens
+ * - Winner stays, loser returns to SPECIFIC SCREEN queue
  */
 
-// Global player queue (main socket IDs)
-let globalQueue = [];
+// Screen queues: { screenId: [playerId, ...] }
+let screenQueues = {
+  "display_1": [],
+  "display_2": [],
+  "display_3": []
+};
 
 // Active games per screen: { screenId: { player1Id, player2Id, winnerId } }
 // IMPORTANT: player1Id and player2Id are ALWAYS main socket IDs
@@ -20,44 +23,63 @@ let displaySockets = {};
 const SCREEN_IDS = ["display_1", "display_2", "display_3"];
 
 /**
- * Add player to global queue
+ * Add player to specific screen queue
  */
-function addToQueue(playerId) {
-  if (!globalQueue.includes(playerId)) {
-    globalQueue.push(playerId);
-    console.log(`Player ${playerId} added to queue. Queue length: ${globalQueue.length}`);
+function joinScreenQueue(screenId, playerId) {
+  if (!screenQueues[screenId]) {
+    console.error(`Invalid screen ID: ${screenId}`);
+    return false;
+  }
+
+  // Remove from other queues first to prevent duplicates
+  removeFromAllQueues(playerId);
+
+  if (!screenQueues[screenId].includes(playerId)) {
+    screenQueues[screenId].push(playerId);
+    console.log(`Player ${playerId} joined queue for ${screenId}. Queue length: ${screenQueues[screenId].length}`);
     return true;
   }
   return false;
 }
 
 /**
- * Remove player from global queue
+ * Remove player from all queues
  */
-function removeFromQueue(playerId) {
-  const index = globalQueue.indexOf(playerId);
-  if (index > -1) {
-    globalQueue.splice(index, 1);
-    console.log(`Player ${playerId} removed from queue. Queue length: ${globalQueue.length}`);
-    return true;
+function removeFromAllQueues(playerId) {
+  let removed = false;
+  for (const screenId of SCREEN_IDS) {
+    const index = screenQueues[screenId].indexOf(playerId);
+    if (index > -1) {
+      screenQueues[screenId].splice(index, 1);
+      console.log(`Player ${playerId} removed from ${screenId} queue.`);
+      removed = true;
+    }
   }
-  return false;
+  return removed;
 }
 
 /**
- * Get player's position in global queue
+ * Get player's position in specific screen queue
  */
-function getQueuePosition(playerId) {
-  const index = globalQueue.indexOf(playerId);
+function getQueuePosition(screenId, playerId) {
+  if (!screenQueues[screenId]) return null;
+  const index = screenQueues[screenId].indexOf(playerId);
   if (index === -1) return null;
   return index + 1; // 1-indexed for display
 }
 
 /**
- * Get total queue length
+ * Get queue length for screen
  */
-function getQueueLength() {
-  return globalQueue.length;
+function getQueueLength(screenId) {
+  return screenQueues[screenId] ? screenQueues[screenId].length : 0;
+}
+
+/**
+ * Get all players in queue for screen
+ */
+function getQueuedPlayers(screenId) {
+  return screenQueues[screenId] ? [...screenQueues[screenId]] : [];
 }
 
 /**
@@ -74,151 +96,97 @@ function isPlayerPlaying(playerId) {
 }
 
 /**
- * Get next available screen (no active game AND display connected)
- */
-function getAvailableScreen() {
-  for (const screenId of SCREEN_IDS) {
-    // Check if display is connected
-    const displayConnected = !!displaySockets[screenId];
-
-    // Check if screen has no active game
-    const noActiveGame = !activeGames[screenId] || !activeGames[screenId].player1Id;
-
-    if (displayConnected && noActiveGame) {
-      return screenId;
-    }
-  }
-  return null;
-}
-
-/**
- * Get screen with winner waiting for challenger
- */
-function getScreenWithWaitingWinner() {
-  console.log("🔍 Looking for waiting winner...");
-
-  for (const screenId of SCREEN_IDS) {
-    const game = activeGames[screenId];
-    const displayConnected = !!displaySockets[screenId];
-
-    if (game && game.winnerId && displayConnected) {
-      // Winner waiting means: winnerId is set AND one of the player slots is empty (or will be filled)
-      // Logic: Winner stays in their slot, loser's slot is available
-
-      // Check if P1 is winner and P2 is empty/needs challenger
-      if (game.player1Id === game.winnerId && !game.player2Id) {
-        console.log(`   ✅ FOUND waiting winner on ${screenId}: P1=${game.player1Id}`);
-        return {
-          screenId,
-          winnerId: game.player1Id,
-          winnerPosition: 1,
-          emptyPosition: 2,
-        };
-      }
-      // Check if P2 is winner and P1 is empty/needs challenger
-      else if (game.player2Id === game.winnerId && !game.player1Id) {
-        console.log(`   ✅ FOUND waiting winner on ${screenId}: P2=${game.player2Id}`);
-        return {
-          screenId,
-          winnerId: game.player2Id,
-          winnerPosition: 2,
-          emptyPosition: 1,
-        };
-      }
-    }
-  }
-
-  console.log("   ❌ No waiting winner found");
-  return null;
-}
-
-/**
- * Get next pair of players from queue
- * PRIORITY 1: Match single player with waiting winner
+ * Get next pair of players for a SPECIFIC screen
+ * PRIORITY 1: Match single player from queue with waiting winner
  * PRIORITY 2: Match two players from queue
- * Returns null if not enough players
  */
-function getNextPair() {
-  console.log("\n🎯 getNextPair called:");
-  console.log(`   Queue length: ${globalQueue.length}`);
-  console.log(`   Queue: [${globalQueue.join(", ")}]`);
+function getNextPairForScreen(screenId) {
+  console.log(`\n🎯 getNextPairForScreen called for ${screenId}:`);
+  const queue = screenQueues[screenId];
 
-  // PRIORITY 1: Check if any winner is waiting for challenger
-  const waitingWinner = getScreenWithWaitingWinner();
+  if (!queue) {
+    console.error(`   ❌ Invalid screen ID: ${screenId}`);
+    return null;
+  }
 
-  if (waitingWinner) {
-    console.log(`   Found waiting winner: ${waitingWinner.winnerId} on ${waitingWinner.screenId}`);
+  console.log(`   Queue length: ${queue.length}`);
+  console.log(`   Queue: [${queue.join(", ")}]`);
 
-    if (globalQueue.length > 0) {
-      // Match next player in queue with waiting winner
-      const challengerId = globalQueue.shift();
+  const game = activeGames[screenId];
+  const displayConnected = !!displaySockets[screenId];
 
-      console.log(
-        `🆚 REMATCH: Challenger ${challengerId} vs waiting winner (P${waitingWinner.winnerPosition}) on ${waitingWinner.screenId}`
-      );
+  if (!displayConnected) {
+    console.log(`   ❌ Display not connected for ${screenId}`);
+    return null;
+  }
 
-      return {
-        winnerId: waitingWinner.winnerId,
-        challengerId: challengerId,
-        winnerPosition: waitingWinner.winnerPosition,
-        challengerPosition: waitingWinner.emptyPosition,
-        screenId: waitingWinner.screenId,
-        isRematch: true,
-      };
-    } else {
-      console.log(`   ⚠️ Waiting winner found but queue empty - no match possible`);
-      return null;
+  // PRIORITY 1: Check if winner is waiting
+  if (game && game.winnerId) {
+    // Check if P1 is winner and P2 is empty
+    if (game.player1Id === game.winnerId && !game.player2Id) {
+      console.log(`   ✅ Waiting winner (P1) found on ${screenId}`);
+
+      if (queue.length > 0) {
+        const challengerId = queue.shift();
+        console.log(`   🆚 REMATCH: Challenger ${challengerId} vs Winner ${game.winnerId}`);
+
+        return {
+          winnerId: game.winnerId,
+          challengerId: challengerId,
+          winnerPosition: 1,
+          challengerPosition: 2,
+          screenId: screenId,
+          isRematch: true,
+        };
+      } else {
+        console.log(`   ⚠️ Waiting winner but queue empty`);
+        return null;
+      }
+    }
+    // Check if P2 is winner and P1 is empty
+    else if (game.player2Id === game.winnerId && !game.player1Id) {
+      console.log(`   ✅ Waiting winner (P2) found on ${screenId}`);
+
+      if (queue.length > 0) {
+        const challengerId = queue.shift();
+        console.log(`   🆚 REMATCH: Challenger ${challengerId} vs Winner ${game.winnerId}`);
+
+        return {
+          winnerId: game.winnerId,
+          challengerId: challengerId,
+          winnerPosition: 2,
+          challengerPosition: 1,
+          screenId: screenId,
+          isRematch: true,
+        };
+      } else {
+        console.log(`   ⚠️ Waiting winner but queue empty`);
+        return null;
+      }
     }
   }
 
   // PRIORITY 2: Match two new players from queue
-  if (globalQueue.length < 2) {
-    console.log(`   ❌ Not enough players in queue for new match (need 2, have ${globalQueue.length})`);
-    return null;
+  // Only if no active game
+  if (!game || (!game.player1Id && !game.player2Id)) {
+    if (queue.length >= 2) {
+      const player1Id = queue.shift();
+      const player2Id = queue.shift();
+
+      console.log(`   👥 NEW MATCH: ${player1Id} vs ${player2Id}`);
+      return { player1Id, player2Id, screenId, isRematch: false };
+    } else {
+      console.log(`   ❌ Not enough players in queue (need 2, have ${queue.length})`);
+      return null;
+    }
   }
 
-  const player1Id = globalQueue.shift();
-  const player2Id = globalQueue.shift();
-
-  console.log(`👥 NEW MATCH: ${player1Id} vs ${player2Id}`);
-  console.log(`   Queue after shifts: [${globalQueue.join(", ")}]`);
-
-  return { player1Id, player2Id, isRematch: false };
+  console.log(`   ❌ Game already active on ${screenId}`);
+  return null;
 }
 
 /**
- * Assign pair to available screen
- * If screenId provided (rematch), use that screen
- */
-function assignPairToScreen(player1Id, player2Id, preferredScreenId = null) {
-  let screenId = preferredScreenId;
-
-  // If no preferred screen or preferred not available, get available one
-  if (!screenId) {
-    screenId = getAvailableScreen();
-  }
-
-  if (!screenId) {
-    console.error("No available screens!");
-    // Return players to queue
-    globalQueue.unshift(player2Id, player1Id);
-    return null;
-  }
-
-  activeGames[screenId] = {
-    player1Id,
-    player2Id,
-    winnerId: null,
-    startedAt: Date.now(),
-  };
-
-  console.log(`Assigned pair to ${screenId}: ${player1Id} vs ${player2Id}`);
-
-  return screenId;
-}
-
-/**
- * Handle game over - winner stays, loser returns to queue
+ * Handle game over - winner stays, loser returns to SPECIFIC SCREEN queue
  */
 function handleGameOver(screenId, winnerId, loserId) {
   const game = activeGames[screenId];
@@ -232,20 +200,13 @@ function handleGameOver(screenId, winnerId, loserId) {
   game.winnerId = winnerId;
 
   console.log(`✅ Game over on ${screenId}. Winner: ${winnerId} (waiting), Loser: ${loserId}`);
-  console.log(`   Game state before clear: P1=${game.player1Id}, P2=${game.player2Id}`);
 
   // Clear the losing player's slot ONLY
   if (game.player1Id === winnerId) {
-    console.log(`   Winner is P1, clearing P2 (${game.player2Id})`);
     game.player2Id = null; // Clear P2
   } else if (game.player2Id === winnerId) {
-    console.log(`   Winner is P2, clearing P1 (${game.player1Id})`);
     game.player1Id = null; // Clear P1
-  } else {
-    console.warn(`   ⚠️ Winner ID ${winnerId} does not match P1 (${game.player1Id}) or P2 (${game.player2Id})!`);
   }
-
-  console.log(`   Game state after clear: P1=${game.player1Id}, P2=${game.player2Id}`);
 
   // Return simple result
   return {
@@ -258,8 +219,8 @@ function handleGameOver(screenId, winnerId, loserId) {
  * Remove player completely (disconnect)
  */
 function removePlayer(playerId) {
-  // Remove from queue
-  removeFromQueue(playerId);
+  // Remove from all queues
+  removeFromAllQueues(playerId);
 
   // Check if player is in active game
   for (const screenId in activeGames) {
@@ -341,6 +302,7 @@ function getAllScreenStatuses() {
   return SCREEN_IDS.map((screenId) => {
     const game = activeGames[screenId];
     const display = displaySockets[screenId];
+    const queue = screenQueues[screenId] || [];
 
     return {
       id: screenId,
@@ -349,21 +311,9 @@ function getAllScreenStatuses() {
       player1Id: game?.player1Id || null,
       player2Id: game?.player2Id || null,
       waitingForChallenger: !!game && !!game.winnerId && (!game.player1Id || !game.player2Id),
+      queueLength: queue.length
     };
   });
-}
-
-/**
- * Get global queue status
- */
-function getGlobalQueueStatus() {
-  return {
-    queueLength: globalQueue.length,
-    players: globalQueue.map((playerId, index) => ({
-      playerId,
-      position: index + 1,
-    })),
-  };
 }
 
 /**
@@ -376,45 +326,61 @@ function clearScreen(screenId) {
 /**
  * Clear entire queue - used when display reconnects
  */
-function clearQueue() {
-  console.log(`🗑️ Clearing entire queue. Previous length: ${globalQueue.length}`);
-  globalQueue = [];
-  console.log(`   Queue cleared. New length: ${globalQueue.length}`);
+function clearQueue(screenId) {
+  if (screenId) {
+    console.log(`🗑️ Clearing queue for ${screenId}`);
+    screenQueues[screenId] = [];
+  } else {
+    console.log(`🗑️ Clearing ALL queues`);
+    for (const id of SCREEN_IDS) {
+      screenQueues[id] = [];
+    }
+  }
 }
 
 /**
  * Clear all games and queue - full reset
  */
 function clearAllGames() {
-  console.log(`🗑️ Clearing all games and queue`);
+  console.log(`🗑️ Clearing all games and queues`);
 
   // Clear all active games
   for (const screenId in activeGames) {
     delete activeGames[screenId];
   }
 
-  // Clear queue
+  // Clear queues
   clearQueue();
 
-  console.log(`   All games and queue cleared`);
+  console.log(`   All games and queues cleared`);
+}
+
+/**
+ * Create new game manually (helper)
+ */
+function createNewGame(screenId, player1Id, player2Id) {
+  activeGames[screenId] = {
+    player1Id,
+    player2Id,
+    winnerId: null,
+    startedAt: Date.now(),
+  };
+  return activeGames[screenId];
 }
 
 export {
   // Queue management
-  addToQueue,
-  removeFromQueue,
+  joinScreenQueue,
+  removeFromAllQueues,
   removePlayer,
   getQueuePosition,
   getQueueLength,
-  getGlobalQueueStatus,
+  getQueuedPlayers,
   clearQueue,
   clearAllGames,
 
   // Pairing
-  getNextPair,
-  assignPairToScreen,
-  getAvailableScreen,
-  getScreenWithWaitingWinner,
+  getNextPairForScreen,
 
   // Game management
   handleGameOver,
@@ -422,6 +388,7 @@ export {
   getScreenForPlayer,
   isPlayerPlaying,
   clearScreen,
+  createNewGame,
 
   // Display management
   setDisplaySocket,

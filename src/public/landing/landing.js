@@ -37,15 +37,11 @@ function toggleLanguage() {
  * Update screen statuses display
  */
 function updateScreenStatuses(data) {
-  const { screens, queue } = data;
-
-  // Update global queue info
+  // Update global queue info - REMOVED (per screen now)
+  const { screens } = data;
   const queueLengthEl = document.getElementById("queue-length");
   if (queueLengthEl) {
-    const queueText = currentLanguage === "lt"
-      ? `Žaidėjų eilėje: ${queue.queueLength}`
-      : `Players in queue: ${queue.queueLength}`;
-    queueLengthEl.textContent = queueText;
+    queueLengthEl.style.display = "none";
   }
 
   // Update screen statuses
@@ -54,8 +50,18 @@ function updateScreenStatuses(data) {
     screensContainer.innerHTML = "";
 
     screens.forEach((screen) => {
+      // Create clickable card
+      const screenLink = document.createElement("a");
+      screenLink.className = "screen-status-card";
+      screenLink.href = `/play?screen=${screen.id}`;
+      screenLink.style.textDecoration = "none";
+      screenLink.style.display = "block";
+
       const screenDiv = document.createElement("div");
       screenDiv.className = "screen-status";
+      // Add hover effect style inline or class
+      screenDiv.style.cursor = "pointer";
+      screenDiv.style.transition = "transform 0.2s, box-shadow 0.2s";
 
       const screenNumber = screen.id.split("_")[1] || screen.id;
       const title = document.createElement("h3");
@@ -64,9 +70,17 @@ function updateScreenStatuses(data) {
       const status = document.createElement("div");
       status.className = "status-text";
 
+      const queueInfo = document.createElement("div");
+      queueInfo.className = "screen-queue-info";
+      queueInfo.style.fontSize = "0.9em";
+      queueInfo.style.marginTop = "5px";
+      queueInfo.style.color = "#aaa";
+
       if (!screen.displayConnected) {
         status.textContent = currentLanguage === "lt" ? "Neprijungtas" : "Disconnected";
         status.style.color = "#666";
+        screenLink.style.pointerEvents = "none"; // Disable clicking if disconnected
+        screenDiv.style.opacity = "0.5";
       } else if (screen.gameActive) {
         status.textContent = currentLanguage === "lt"
           ? "Žaidžiama..."
@@ -82,9 +96,18 @@ function updateScreenStatuses(data) {
         status.style.color = "#0ff";
       }
 
+      // Queue info
+      const qLen = screen.queueLength || 0;
+      queueInfo.textContent = currentLanguage === "lt"
+        ? `Eilėje: ${qLen}`
+        : `In queue: ${qLen}`;
+
       screenDiv.appendChild(title);
       screenDiv.appendChild(status);
-      screensContainer.appendChild(screenDiv);
+      screenDiv.appendChild(queueInfo);
+
+      screenLink.appendChild(screenDiv);
+      screensContainer.appendChild(screenLink);
     });
   }
 }
