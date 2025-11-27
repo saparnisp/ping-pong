@@ -42,6 +42,38 @@
       </p>
     </div>
 
+    <!-- Match Confirmation Screen -->
+    <div id="confirmationScreen" style="display: none" class="modal confirmation-modal">
+      <div class="modal-content confirmation-content">
+        <h1 class="confirmation-title" data-lt="RASTAS VARŽOVAS!" data-en="MATCH FOUND!">
+          RASTAS VARŽOVAS!
+        </h1>
+        <p class="confirmation-screen">
+          <span data-lt="Ekranas" data-en="Screen">Ekranas</span>:
+          <span id="confirmScreenNumber" class="screen-highlight">1</span>
+        </p>
+        <div class="confirmation-countdown-container">
+          <div class="confirmation-countdown-circle">
+            <span id="confirmCountdownTimer">10</span>
+          </div>
+          <p class="confirmation-countdown-text" data-lt="sekundės iki išmetimo" data-en="seconds until removal">
+            sekundės iki išmetimo
+          </p>
+        </div>
+        <button
+          id="confirmReadyButton"
+          class="confirm-ready-button"
+          data-lt="PRADĖTI ŽAISTI"
+          data-en="START PLAYING"
+        >
+          PRADĖTI ŽAISTI
+        </button>
+        <p class="confirmation-warning" data-lt="Patvirtinkite, kad esate pasiruošę!" data-en="Confirm you are ready!">
+          Patvirtinkite, kad esate pasiruošę!
+        </p>
+      </div>
+    </div>
+
     <!-- Winner Screen -->
     <div id="winnerScreen" style="display: none" class="modal winner-modal">
       <div class="modal-content winner-content">
@@ -74,28 +106,17 @@
           <span id="loserFinalScore">0</span>
         </p>
         <div class="loser-queue-info">
-          <p data-lt="Grįžtate į eilės pabaigą" data-en="Returning to end of queue">
-            Grįžtate į eilės pabaigą
+          <p data-lt="Norite žaisti dar kartą?" data-en="Play again?">
+            Norite žaisti dar kartą?
           </p>
-          <div class="countdown-container">
-            <div class="countdown-circle">
-              <span id="countdownTimer">10</span>
-            </div>
-            <p class="countdown-text" data-lt="sekundės iki pašalinimo" data-en="seconds until removal">
-              sekundės iki pašalinimo
-            </p>
-          </div>
           <button
             id="playButton"
             class="play-button"
-            data-lt="ŽAISTI"
-            data-en="PLAY"
+            data-lt="ŽAISTI IŠ NAUJO"
+            data-en="PLAY AGAIN"
           >
-            ŽAISTI
+            ŽAISTI IŠ NAUJO
           </button>
-          <p class="queue-warning" data-lt="Paspauskite ŽAISTI, kad liktumėte eilėje" data-en="Press PLAY to stay in queue">
-            Paspauskite ŽAISTI, kad liktumėte eilėje
-          </p>
         </div>
       </div>
     </div>
@@ -137,6 +158,6 @@
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script type="module" src="play.js"></script>
+    <script type="module" src="play.js?v=6"></script>
   </body>
 </html>

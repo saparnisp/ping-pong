@@ -103,6 +103,122 @@ body {
   text-align: center;
 }
 
+/* Confirmation Screen */
+.confirmation-modal {
+  background: radial-gradient(circle, rgba(92, 255, 192, 0.1) 0%, rgba(0, 0, 0, 0.98) 100%);
+}
+
+.confirmation-content {
+  border: 3px solid #5cffc0;
+  box-shadow: 0 0 40px rgba(92, 255, 192, 0.5);
+}
+
+.confirmation-title {
+  font-size: 2.2em;
+  color: #5cffc0;
+  text-shadow: 0 0 20px rgba(92, 255, 192, 0.8);
+  margin-bottom: 20px;
+  font-weight: bold;
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+.confirmation-screen {
+  font-size: 1.3em;
+  color: #fff;
+  margin-bottom: 25px;
+}
+
+.screen-highlight {
+  font-size: 2em;
+  color: #00f3ff;
+  font-weight: bold;
+  text-shadow: 0 0 15px rgba(0, 243, 255, 0.8);
+  margin-left: 10px;
+}
+
+.confirmation-countdown-container {
+  margin: 25px 0;
+}
+
+.confirmation-countdown-circle {
+  width: 120px;
+  height: 120px;
+  border: 6px solid #5cffc0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+  background: rgba(92, 255, 192, 0.1);
+  box-shadow: 0 0 30px rgba(92, 255, 192, 0.4);
+  animation: pulse-border-green 1s ease-in-out infinite;
+}
+
+.confirmation-countdown-circle span {
+  font-size: 3.5em;
+  font-weight: bold;
+  color: #5cffc0;
+  text-shadow: 0 0 20px rgba(92, 255, 192, 0.8);
+}
+
+.confirmation-countdown-text {
+  color: #aaa;
+  font-size: 0.9em;
+  margin-bottom: 25px;
+}
+
+.confirm-ready-button {
+  background: linear-gradient(135deg, #5cffc0 0%, #00f3ff 100%);
+  border: none;
+  color: #000;
+  padding: 18px 60px;
+  border-radius: 50px;
+  font-size: 1.5em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(92, 255, 192, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.confirm-ready-button:hover {
+  background: linear-gradient(135deg, #6dffcc 0%, #1affff 100%);
+  transform: scale(1.05);
+  box-shadow: 0 6px 30px rgba(92, 255, 192, 0.6);
+}
+
+.confirm-ready-button:active {
+  transform: scale(0.98);
+}
+
+.confirmation-warning {
+  color: #ff6b6b;
+  font-size: 0.85em;
+  margin-top: 15px;
+  font-weight: 600;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(92, 255, 192, 0.8);
+  }
+  50% {
+    text-shadow: 0 0 40px rgba(92, 255, 192, 1);
+  }
+}
+
+@keyframes pulse-border-green {
+  0%, 100% {
+    border-color: #5cffc0;
+    box-shadow: 0 0 30px rgba(92, 255, 192, 0.4);
+  }
+  50% {
+    border-color: #6dffcc;
+    box-shadow: 0 0 50px rgba(92, 255, 192, 0.7);
+  }
+}
+
 .modal-content {
   background: #111;
   padding: 40px;

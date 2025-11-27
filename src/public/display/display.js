@@ -12,6 +12,7 @@ let gameState = null;
 let showScreenNumber = true;
 let glowIntensity = 0;
 let glowDirection = 1;
+let gameOverWinner = null; // Track game over state
 
 /**
  * Get screen ID from URL
@@ -314,8 +315,11 @@ function render() {
     drawBall(gameState.ball.x, gameState.ball.y);
   }
 
-  // Draw screen number when no active game
-  if (!gameState.gameActive) {
+  // Draw game over message if game ended
+  if (gameOverWinner) {
+    drawGameOver(gameOverWinner);
+  } else if (!gameState.gameActive) {
+    // Draw screen number when no active game (but not during game over)
     drawScreenNumber();
   }
 
@@ -331,7 +335,18 @@ function handleUpdateGame(newGameState) {
 
   if (gameState.gameActive) {
     showScreenNumber = false;
+    gameOverWinner = null; // Clear game over when game becomes active
   }
+}
+
+/**
+ * Handle game over event
+ */
+function handleGameOver(data) {
+  console.log("Game over received:", data);
+  // data.winner is 1 or 2
+  gameOverWinner = data.winner;
+  showScreenNumber = false;
 }
 
 /**
@@ -357,6 +372,7 @@ function handleCountdown(data) {
 function handleGameStart() {
   countdownNumber = null;
   showScreenNumber = false;
+  gameOverWinner = null; // Clear game over when new game starts
 }
 
 /**
@@ -412,6 +428,7 @@ function connectSocket() {
   socket.on("countdown", handleCountdown);
   socket.on("gameStart", handleGameStart);
   socket.on("scored", handleScored);
+  socket.on("gameOver", handleGameOver);
 
   socket.on("enableBlinking", () => {
     console.log("Player disconnected, blinking...");

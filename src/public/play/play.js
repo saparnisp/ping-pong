@@ -19,10 +19,13 @@ let waitingScreen = null;
 let gameElements = null;
 let winnerScreen = null;
 let loserScreen = null;
+let confirmationScreen = null;
 
-// Loser countdown
-let loserCountdownTimer = null;
-let loserCountdownValue = 10;
+let gameEndReceived = false; // Track if gameEnd event was received
+
+// Confirmation countdown
+let confirmCountdownTimer = null;
+let confirmCountdownValue = 10;
 
 /**
  * Update UI texts based on language
@@ -51,6 +54,23 @@ function showWaitingScreen() {
   if (gameElements) gameElements.style.display = "none";
   if (winnerScreen) winnerScreen.style.display = "none";
   if (loserScreen) loserScreen.style.display = "none";
+  if (confirmationScreen) confirmationScreen.style.display = "none";
+}
+
+/**
+ * Show confirmation screen
+ */
+function showConfirmationScreen() {
+  console.log("📋 Showing confirmation screen");
+
+  if (confirmationScreen) confirmationScreen.style.display = "flex";
+  if (waitingScreen) waitingScreen.style.display = "none";
+  if (gameElements) gameElements.style.display = "none";
+  if (winnerScreen) winnerScreen.style.display = "none";
+  if (loserScreen) loserScreen.style.display = "none";
+
+  // Start confirmation countdown
+  startConfirmationCountdown();
 }
 
 /**
@@ -61,6 +81,54 @@ function showGameScreen() {
   if (gameElements) gameElements.style.display = "flex";
   if (winnerScreen) winnerScreen.style.display = "none";
   if (loserScreen) loserScreen.style.display = "none";
+  if (confirmationScreen) confirmationScreen.style.display = "none";
+}
+
+/**
+ * Start confirmation countdown (10s to confirm ready)
+ */
+function startConfirmationCountdown() {
+  console.log("⏱️ Starting confirmation countdown");
+
+  confirmCountdownValue = 10;
+  const timerElement = document.getElementById("confirmCountdownTimer");
+
+  if (timerElement) {
+    timerElement.textContent = confirmCountdownValue;
+  }
+
+  // Clear any existing timer
+  if (confirmCountdownTimer) {
+    clearInterval(confirmCountdownTimer);
+  }
+
+  confirmCountdownTimer = setInterval(() => {
+    confirmCountdownValue--;
+    console.log(`  ⏰ Confirmation countdown: ${confirmCountdownValue}`);
+
+    if (timerElement) {
+      timerElement.textContent = confirmCountdownValue;
+    }
+
+    if (confirmCountdownValue <= 0) {
+      clearInterval(confirmCountdownTimer);
+      confirmCountdownTimer = null;
+
+      // Time's up - return to landing
+      console.log("⏰ Confirmation expired, redirecting to landing");
+      window.location.href = "/";
+    }
+  }, 1000);
+}
+
+/**
+ * Stop confirmation countdown
+ */
+function stopConfirmationCountdown() {
+  if (confirmCountdownTimer) {
+    clearInterval(confirmCountdownTimer);
+    confirmCountdownTimer = null;
+  }
 }
 
 /**
@@ -111,69 +179,50 @@ function showLoserScreen(finalScore) {
       scoreElement.textContent = scoreText;
       console.log("  ✅ Updated score:", scoreText);
     }
-
-    // Start 10 second countdown
-    console.log("  🎬 Starting countdown...");
-    startLoserCountdown();
+    
+    // DISCONNECT IMMEDIATELY to prevent accidental rejoin
+    console.log("🔌 Disconnecting loser immediately...");
+    if (screenSocket) {
+      screenSocket.disconnect();
+      screenSocket = null;
+    }
+    if (socket) {
+      socket.disconnect();
+      // Don't set socket to null here as handlePlayButtonClick might check it, 
+      // but connection is closed.
+    }
   } else {
     console.error("  ❌ ERROR: loserScreen element not found!");
   }
 }
 
 /**
- * Start countdown for loser
+ * Handle confirmation ready button click
  */
-function startLoserCountdown() {
-  console.log("⏱️ startLoserCountdown called");
+function handleConfirmReadyClick() {
+  console.log("✅ Confirmation READY clicked");
 
-  loserCountdownValue = 10;
-  const timerElement = document.getElementById("countdownTimer");
+  // Stop confirmation countdown
+  stopConfirmationCountdown();
 
-  console.log("  Timer element:", timerElement);
-  console.log("  Starting from:", loserCountdownValue);
-
-  if (timerElement) {
-    timerElement.textContent = loserCountdownValue;
-    console.log("  ✅ Set initial timer value");
-  } else {
-    console.error("  ❌ ERROR: countdownTimer element not found!");
-    return;
+  // Emit confirmation to server
+  // If we're in rematch (winner), use screenSocket; otherwise use main socket
+  if (screenSocket && screenSocket.connected) {
+    // Winner in rematch - send via screen namespace
+    console.log("📤 Sending playerConfirmed via screen namespace (rematch)");
+    screenSocket.emit("playerConfirmed");
+  } else if (socket) {
+    // Challenger or new match - send via main namespace
+    console.log("📤 Sending playerConfirmed via main namespace");
+    socket.emit("playerConfirmed");
   }
 
-  // Clear any existing timer
-  if (loserCountdownTimer) {
-    console.log("  Clearing existing timer");
-    clearInterval(loserCountdownTimer);
-  }
+  // Show waiting screen (wait for both players to confirm)
+  showWaitingScreen();
 
-  loserCountdownTimer = setInterval(() => {
-    loserCountdownValue--;
-    console.log(`  ⏰ Countdown: ${loserCountdownValue}`);
-
-    if (timerElement) {
-      timerElement.textContent = loserCountdownValue;
-    }
-
-    if (loserCountdownValue <= 0) {
-      clearInterval(loserCountdownTimer);
-      loserCountdownTimer = null;
-
-      // Time's up - redirect to landing
-      console.log("⏰ Countdown expired, redirecting to landing");
-      window.location.href = "/";
-    }
-  }, 1000);
-
-  console.log("  ✅ Countdown timer started");
-}
-
-/**
- * Stop countdown (when play button pressed)
- */
-function stopLoserCountdown() {
-  if (loserCountdownTimer) {
-    clearInterval(loserCountdownTimer);
-    loserCountdownTimer = null;
+  const waitingMessage = document.getElementById("queue-position");
+  if (waitingMessage) {
+    waitingMessage.textContent = currentLanguage === "lt" ? "Laukiama kito žaidėjo..." : "Waiting for other player...";
   }
 }
 
@@ -181,35 +230,22 @@ function stopLoserCountdown() {
  * Handle play button click
  */
 function handlePlayButtonClick() {
-  console.log("✅ Play button clicked - staying in queue");
+  console.log("✅ Play button clicked - redirecting to main page");
 
-  // Stop countdown
-  stopLoserCountdown();
-
-  // Disconnect from screen namespace NOW
+  // Disconnect from screen namespace
   if (screenSocket) {
-    console.log("🔄 Disconnecting from screen namespace (user clicked PLAY)...");
+    console.log("🔄 Disconnecting from screen namespace...");
     screenSocket.disconnect();
     screenSocket = null;
   }
 
-  // Clear screen-related state
-  controls = null;
-  screenId = null;
-  playerNumber = null;
-
-  console.log("  ✅ Disconnected, returning to main namespace queue");
-
-  // Notify server that loser wants to stay in queue
+  // Disconnect main socket
   if (socket) {
-    socket.emit("loserReady");
+    socket.disconnect();
   }
 
-  // Show waiting screen
-  showWaitingScreen();
-
-  // Update texts
-  updateTexts();
+  // Redirect to home page
+  window.location.href = "/";
 }
 
 /**
@@ -307,11 +343,53 @@ function connectToServer() {
     screenId = data.screenId;
     playerNumber = data.playerNumber;
 
+    // Update screen number in confirmation screen
+    document.getElementById("confirmScreenNumber").textContent = screenId.split("_")[1] || screenId;
+
+    // Show confirmation screen
+    showConfirmationScreen();
+
+    // Update texts
+    updateTexts();
+  });
+
+  socket.on("bothPlayersReady", (data) => {
+    console.log("✅ Both players confirmed! Connecting to screen:", data.screenId);
+
+    // Stop confirmation countdown
+    stopConfirmationCountdown();
+
+    // Update screen info
     document.getElementById("screen-id").textContent = screenId.split("_")[1] || screenId;
     document.getElementById("screen").textContent = screenId.split("_")[1] || screenId;
 
     // Connect to screen namespace
     connectToScreen(screenId);
+  });
+
+  socket.on("matchCancelled", (data) => {
+    console.log("❌ Match cancelled:", data.reason);
+
+    // Stop confirmation countdown
+    stopConfirmationCountdown();
+
+    // Return to waiting screen
+    showWaitingScreen();
+
+    alert(data.reason);
+  });
+
+  socket.on("queueReset", (data) => {
+    console.log("🔄 Queue reset:", data.message);
+    
+    // Reset queue display
+    updateQueueDisplay(null, 0);
+    
+    // Show waiting screen
+    showWaitingScreen();
+    
+    // Alert user
+    alert(data.message);
   });
 
   socket.on("disconnect", () => {
@@ -371,6 +449,7 @@ function connectToScreen(screenId) {
 
   screenSocket.on("gameStart", () => {
     console.log("Game started!");
+    gameEndReceived = false; // Reset game end flag for new game
     showGameScreen();
 
     // Make sure controls are active
@@ -388,8 +467,48 @@ function connectToScreen(screenId) {
   });
 
   screenSocket.on("updateGame", (newGameState) => {
+    const previousGameActive = gameState?.gameActive;
     gameState = newGameState;
     updateScoreDisplay();
+
+    // Fallback: If game was active and suddenly stopped, check if someone won
+    // This handles cases where gameEnd event might not be received
+    if (previousGameActive && !newGameState.gameActive && !gameEndReceived) {
+      // Check if loser/winner screens are already showing
+      const loserShowing = loserScreen && loserScreen.style.display === "flex";
+      const winnerShowing = winnerScreen && winnerScreen.style.display === "flex";
+      
+      if (!loserShowing && !winnerShowing) {
+        // Check if someone reached WIN_SCORE
+        const WIN_SCORE = 5; // From PONG_CONFIG
+        if (newGameState.player1 && newGameState.player2) {
+          const player1Won = newGameState.player1.score >= WIN_SCORE;
+          const player2Won = newGameState.player2.score >= WIN_SCORE;
+          
+          if (player1Won || player2Won) {
+            console.log("⚠️ Game stopped without gameEnd event, but winner found!");
+            const isWinner = (playerNumber === 1 && player1Won) || (playerNumber === 2 && player2Won);
+            const finalScore = {
+              player1: newGameState.player1.score,
+              player2: newGameState.player2.score
+            };
+            
+            console.log(`🎮 Game over detected via fallback: Winner=${isWinner ? 'YOU' : 'OPPONENT'}`);
+            gameEndReceived = true; // Mark as received to prevent duplicate handling
+            
+            if (controls) {
+              controls.setPlaying(false);
+            }
+            
+            if (isWinner) {
+              showWinnerScreen(finalScore);
+            } else {
+              showLoserScreen(finalScore);
+            }
+          }
+        }
+      }
+    }
   });
 
   screenSocket.on("scored", (data) => {
@@ -400,6 +519,8 @@ function connectToScreen(screenId) {
     console.log(data.won ? "🎉 YOU WON!" : "😢 YOU LOST");
     console.log("Final score:", data.finalScore);
     console.log("Full gameEnd data:", data);
+
+    gameEndReceived = true; // Mark that gameEnd was received
 
     if (controls) {
       controls.setPlaying(false);
@@ -458,6 +579,50 @@ function connectToScreen(screenId) {
     });
   });
 
+  // Handle matchFound for rematch (winner receives this on screen namespace)
+  screenSocket.on("matchFound", (data) => {
+    console.log("🆚 Match found (rematch) on screen namespace:", data);
+    screenId = data.screenId;
+    playerNumber = data.playerNumber;
+
+    // Update screen number in confirmation screen
+    document.getElementById("confirmScreenNumber").textContent = screenId.split("_")[1] || screenId;
+
+    // Show confirmation screen
+    showConfirmationScreen();
+
+    // Update texts
+    updateTexts();
+  });
+
+  // Handle bothPlayersReady for rematch (winner receives this on screen namespace)
+  screenSocket.on("bothPlayersReady", (data) => {
+    console.log("✅ Both players confirmed (rematch)! Screen:", data.screenId);
+
+    // Stop confirmation countdown if running
+    stopConfirmationCountdown();
+
+    // Update screen info
+    document.getElementById("screen-id").textContent = screenId.split("_")[1] || screenId;
+    document.getElementById("screen").textContent = screenId.split("_")[1] || screenId;
+
+    // Winner is already connected to screen namespace, just need to wait for countdown
+    // The game will start automatically via countdown
+  });
+
+  // Handle matchCancelled for rematch (winner receives this on screen namespace)
+  screenSocket.on("matchCancelled", (data) => {
+    console.log("❌ Match cancelled (rematch):", data.reason);
+
+    // Stop confirmation countdown
+    stopConfirmationCountdown();
+
+    // Return to waiting screen
+    showWaitingScreen();
+
+    alert(data.reason);
+  });
+
   screenSocket.on("disconnect", () => {
     console.log("Disconnected from screen");
   });
@@ -472,11 +637,15 @@ document.addEventListener("DOMContentLoaded", () => {
   gameElements = document.querySelector(".game-elements");
   winnerScreen = document.getElementById("winnerScreen");
   loserScreen = document.getElementById("loserScreen");
+  confirmationScreen = document.getElementById("confirmationScreen");
 
   // Language switcher
   document
     .getElementById("language-switcher")
     .addEventListener("click", toggleLanguage);
+
+  // Confirmation ready button
+  document.getElementById("confirmReadyButton")?.addEventListener("click", handleConfirmReadyClick);
 
   // Play button for loser
   document.getElementById("playButton")?.addEventListener("click", handlePlayButtonClick);

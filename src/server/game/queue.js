@@ -6,10 +6,11 @@
  * - Winner stays, loser returns to queue
  */
 
-// Global player queue (not per-screen)
+// Global player queue (main socket IDs)
 let globalQueue = [];
 
 // Active games per screen: { screenId: { player1Id, player2Id, winnerId } }
+// IMPORTANT: player1Id and player2Id are ALWAYS main socket IDs
 let activeGames = {};
 
 // Display sockets per screen
@@ -100,40 +101,29 @@ function getScreenWithWaitingWinner() {
     const game = activeGames[screenId];
     const displayConnected = !!displaySockets[screenId];
 
-    console.log(`   Checking ${screenId}:`);
-    console.log(`     Game exists: ${!!game}`);
-    console.log(`     Display connected: ${displayConnected}`);
-
-    if (game) {
-      console.log(`     winnerId: ${game.winnerId}`);
-      console.log(`     player1Id: ${game.player1Id}`);
-      console.log(`     player2Id: ${game.player2Id}`);
-    }
-
-    // Screen has a winner waiting and display is connected
-    // Winner waiting means: winnerId is set AND one of the player slots is empty
     if (game && game.winnerId && displayConnected) {
-      // Check which player is the winner and which slot is empty
-      if (game.player1Id && !game.player2Id) {
-        // Player1 is winner, waiting for player2
-        console.log(`   ✅ FOUND waiting winner on ${screenId}: P1=${game.player1Id}, P2 slot empty`);
+      // Winner waiting means: winnerId is set AND one of the player slots is empty (or will be filled)
+      // Logic: Winner stays in their slot, loser's slot is available
+      
+      // Check if P1 is winner and P2 is empty/needs challenger
+      if (game.player1Id === game.winnerId && !game.player2Id) {
+        console.log(`   ✅ FOUND waiting winner on ${screenId}: P1=${game.player1Id}`);
         return {
           screenId,
-          winnerId: game.player1Id, // Screen namespace socket ID
+          winnerId: game.player1Id,
           winnerPosition: 1,
           emptyPosition: 2,
         };
-      } else if (game.player2Id && !game.player1Id) {
-        // Player2 is winner, waiting for player1
-        console.log(`   ✅ FOUND waiting winner on ${screenId}: P2=${game.player2Id}, P1 slot empty`);
+      } 
+      // Check if P2 is winner and P1 is empty/needs challenger
+      else if (game.player2Id === game.winnerId && !game.player1Id) {
+        console.log(`   ✅ FOUND waiting winner on ${screenId}: P2=${game.player2Id}`);
         return {
           screenId,
-          winnerId: game.player2Id, // Screen namespace socket ID
+          winnerId: game.player2Id,
           winnerPosition: 2,
           emptyPosition: 1,
         };
-      } else {
-        console.log(`   ⚠️ winnerId set but both/neither slots filled - skip`);
       }
     }
   }
@@ -166,13 +156,12 @@ function getNextPair() {
       console.log(
         `🆚 REMATCH: Challenger ${challengerId} vs waiting winner (P${waitingWinner.winnerPosition}) on ${waitingWinner.screenId}`
       );
-      console.log(`   Queue after shift: [${globalQueue.join(", ")}]`);
-
+      
       return {
-        winnerId: waitingWinner.winnerId, // Screen socket ID of winner
-        challengerId: challengerId, // Main socket ID of challenger
-        winnerPosition: waitingWinner.winnerPosition, // 1 or 2
-        challengerPosition: waitingWinner.emptyPosition, // 2 or 1
+        winnerId: waitingWinner.winnerId, 
+        challengerId: challengerId,
+        winnerPosition: waitingWinner.winnerPosition,
+        challengerPosition: waitingWinner.emptyPosition,
         screenId: waitingWinner.screenId,
         isRematch: true,
       };
@@ -230,7 +219,6 @@ function assignPairToScreen(player1Id, player2Id, preferredScreenId = null) {
 
 /**
  * Handle game over - winner stays, loser returns to queue
- * Returns main namespace socket IDs for matchmaking
  */
 function handleGameOver(screenId, winnerId, loserId) {
   const game = activeGames[screenId];
@@ -243,32 +231,16 @@ function handleGameOver(screenId, winnerId, loserId) {
   // Winner stays on screen - mark them as waiting
   game.winnerId = winnerId;
 
-  console.log(`✅ Game over on ${screenId}. Winner: ${winnerId} (waiting), Loser: ${loserId} (to queue)`);
-
-  // Loser returns to end of queue
-  addToQueue(loserId);
+  console.log(`✅ Game over on ${screenId}. Winner: ${winnerId} (waiting), Loser: ${loserId}`);
 
   // Clear the losing player's slot ONLY
-  // Winner keeps their slot (player1Id or player2Id stays)
-  // Loser's slot becomes null
   if (game.player1Id === winnerId) {
-    // Winner is player1, so loser must be player2
-    console.log(`   Winner in P1 slot, clearing P2 slot (loser)`);
-    game.player2Id = null;
+    game.player2Id = null; // Clear P2
   } else if (game.player2Id === winnerId) {
-    // Winner is player2, so loser must be player1
-    console.log(`   Winner in P2 slot, clearing P1 slot (loser)`);
-    game.player1Id = null;
-  } else {
-    console.error(`   ⚠️ ERROR: Winner ${winnerId} not found in game slots!`);
-    console.error(`   P1: ${game.player1Id}, P2: ${game.player2Id}`);
+    game.player1Id = null; // Clear P1
   }
 
-  console.log(`   ⏳ Winner ${winnerId} now waiting for challenger (winnerId=${game.winnerId})`);
-  console.log(`   📊 Queue length: ${globalQueue.length}`);
-
-  // Return simple result - NO matchmaking here!
-  // tryMatchPlayers() will handle matching winner with queue
+  // Return simple result
   return {
     winnerId,
     screenId,
@@ -335,33 +307,6 @@ function getScreenForPlayer(playerId) {
 }
 
 /**
- * Update player's socket ID when they connect to screen namespace
- * This is needed because Socket.IO creates different socket.id for each namespace
- */
-function updatePlayerSocketId(oldSocketId, newSocketId, screenId) {
-  const game = activeGames[screenId];
-
-  if (!game) {
-    console.log(`No game found on ${screenId} to update socket ID`);
-    return false;
-  }
-
-  let updated = false;
-
-  if (game.player1Id === oldSocketId) {
-    console.log(`Updating player1 socket ID: ${oldSocketId} -> ${newSocketId}`);
-    game.player1Id = newSocketId;
-    updated = true;
-  } else if (game.player2Id === oldSocketId) {
-    console.log(`Updating player2 socket ID: ${oldSocketId} -> ${newSocketId}`);
-    game.player2Id = newSocketId;
-    updated = true;
-  }
-
-  return updated;
-}
-
-/**
  * Set display socket
  */
 function setDisplaySocket(screenId, socket) {
@@ -396,7 +341,7 @@ function getAllScreenStatuses() {
       gameActive: !!game && !!game.player1Id && !!game.player2Id,
       player1Id: game?.player1Id || null,
       player2Id: game?.player2Id || null,
-      waitingForChallenger: !!game && !!game.winnerId && !game.player2Id,
+      waitingForChallenger: !!game && !!game.winnerId && (!game.player1Id || !game.player2Id),
     };
   });
 }
@@ -421,15 +366,42 @@ function clearScreen(screenId) {
   delete activeGames[screenId];
 }
 
+/**
+ * Clear entire queue - used when display reconnects
+ */
+function clearQueue() {
+  console.log(`🗑️ Clearing entire queue. Previous length: ${globalQueue.length}`);
+  globalQueue = [];
+  console.log(`   Queue cleared. New length: ${globalQueue.length}`);
+}
+
+/**
+ * Clear all games and queue - full reset
+ */
+function clearAllGames() {
+  console.log(`🗑️ Clearing all games and queue`);
+  
+  // Clear all active games
+  for (const screenId in activeGames) {
+    delete activeGames[screenId];
+  }
+  
+  // Clear queue
+  clearQueue();
+  
+  console.log(`   All games and queue cleared`);
+}
+
 export {
   // Queue management
   addToQueue,
   removeFromQueue,
   removePlayer,
-  updatePlayerSocketId,
   getQueuePosition,
   getQueueLength,
   getGlobalQueueStatus,
+  clearQueue,
+  clearAllGames,
 
   // Pairing
   getNextPair,
