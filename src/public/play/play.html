@@ -1,167 +1,149 @@
 <!DOCTYPE html>
 <html lang="lt">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <link rel="icon" type="image/x-icon" href="../assets/favicon.ico" />
-    <title>Pong Valdymas</title>
-    <link rel="stylesheet" href="controls.css" />
-  </head>
-  <body>
-    <button id="language-switcher">EN</button>
 
-    <!-- Waiting Screen -->
-    <div id="waiting-screen">
-      <h3
-        data-lt="Laukiama žaidimo pradžios"
-        data-en="Waiting for game start"
-      >
-        Laukiama žaidimo pradžios
-      </h3>
-      <p><span data-lt="Ekranas" data-en="Screen">Ekranas</span>:</p>
-      <h1 id="screen-id"></h1>
-      <p>
-        <span data-lt="Žaidėjų eilėje" data-en="Players in queue"
-          >Žaidėjų eilėje</span
-        >: <span id="queue-count">0</span>
-      </p>
-      <p>
-        <span data-lt="Jūsų pozicija" data-en="Your position"
-          >Jūsų pozicija</span
-        >: <span id="queue-position">...</span>
-      </p>
-      <p
-        class="warning-text"
-        data-lt="Užrakinus telefoną prarasite vietą eilėje"
-        data-en="Locking your phone will lose your place in queue"
-      >
-        Užrakinus telefoną prarasite vietą eilėje
-      </p>
-    </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <link rel="icon" type="image/x-icon" href="../assets/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>Pong Valdymas</title>
+  <link rel="stylesheet" href="controls.css" />
+</head>
 
-    <!-- Match Confirmation Screen -->
-    <div id="confirmationScreen" style="display: none" class="modal confirmation-modal">
-      <div class="modal-content confirmation-content">
-        <h1 class="confirmation-title" data-lt="RASTAS VARŽOVAS!" data-en="MATCH FOUND!">
-          RASTAS VARŽOVAS!
-        </h1>
-        <p class="confirmation-screen">
-          <span data-lt="Ekranas" data-en="Screen">Ekranas</span>:
-          <span id="confirmScreenNumber" class="screen-highlight">1</span>
-        </p>
-        <div class="confirmation-countdown-container">
-          <div class="confirmation-countdown-circle">
-            <span id="confirmCountdownTimer">10</span>
-          </div>
-          <p class="confirmation-countdown-text" data-lt="sekundės iki išmetimo" data-en="seconds until removal">
-            sekundės iki išmetimo
-          </p>
-        </div>
-        <button
-          id="confirmReadyButton"
-          class="confirm-ready-button"
-          data-lt="PRADĖTI ŽAISTI"
-          data-en="START PLAYING"
-        >
-          PRADĖTI ŽAISTI
-        </button>
-        <p class="confirmation-warning" data-lt="Patvirtinkite, kad esate pasiruošę!" data-en="Confirm you are ready!">
-          Patvirtinkite, kad esate pasiruošę!
-        </p>
-      </div>
-    </div>
+<body>
+  <div class="background-effects"></div>
+  <button id="language-switcher">EN</button>
 
-    <!-- Winner Screen -->
-    <div id="winnerScreen" style="display: none" class="modal winner-modal">
-      <div class="modal-content winner-content">
-        <div class="winner-icon">🏆</div>
-        <h1 class="winner-title" data-lt="LAIMĖJOTE!" data-en="YOU WON!">
-          LAIMĖJOTE!
-        </h1>
-        <p class="winner-score">
-          <span data-lt="Taškai" data-en="Score">Taškai</span>:
-          <span id="winnerFinalScore">0</span>
-        </p>
-        <div class="winner-waiting">
-          <div class="waiting-spinner"></div>
-          <p data-lt="Laukiamas kitas žaidėjas..." data-en="Waiting for next player...">
-            Laukiamas kitas žaidėjas...
-          </p>
-        </div>
-      </div>
-    </div>
+  <!-- Waiting Screen -->
+  <div id="waiting-screen">
+    <h3 data-lt="Laukiama žaidimo pradžios" data-en="Waiting for game start">
+      Laukiama žaidimo pradžios
+    </h3>
+    <p><span data-lt="Ekranas" data-en="Screen">Ekranas</span>:</p>
+    <h1 id="screen-id"></h1>
+    <p>
+      <span data-lt="Žaidėjų eilėje" data-en="Players in queue">Žaidėjų eilėje</span>: <span id="queue-count">0</span>
+    </p>
+    <p>
+      <span data-lt="Jūsų pozicija" data-en="Your position">Jūsų pozicija</span>: <span id="queue-position">...</span>
+    </p>
+    <p class="warning-text" data-lt="Užrakinus telefoną prarasite vietą eilėje"
+      data-en="Locking your phone will lose your place in queue">
+      Užrakinus telefoną prarasite vietą eilėje
+    </p>
+  </div>
 
-    <!-- Loser Screen -->
-    <div id="loserScreen" style="display: none" class="modal loser-modal">
-      <div class="modal-content loser-content">
-        <div class="loser-icon">😢</div>
-        <h1 class="loser-title" data-lt="PRALAIMĖJOTE" data-en="YOU LOST">
-          PRALAIMĖJOTE
-        </h1>
-        <p class="loser-score">
-          <span data-lt="Taškai" data-en="Score">Taškai</span>:
-          <span id="loserFinalScore">0</span>
-        </p>
-        <div class="loser-queue-info">
-          <p data-lt="Norite žaisti dar kartą?" data-en="Play again?">
-            Norite žaisti dar kartą?
-          </p>
-          <p class="loser-countdown" style="font-size: 0.9em; margin-bottom: 15px; opacity: 0.8;">
-            <span data-lt="Grįžtama į pradžią už" data-en="Returning to start in">Grįžtama į pradžią už</span>
-            <span id="loserCountdownTimer">5</span>s
-          </p>
-          <button
-            id="playButton"
-            class="play-button"
-            data-lt="ŽAISTI IŠ NAUJO"
-            data-en="PLAY AGAIN"
-          >
-            ŽAISTI IŠ NAUJO
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Game Screen -->
-    <div class="game-elements" style="display: none">
-      <!-- Score Display -->
-      <div class="score-header">
-        <div class="score-item" id="yourScoreItem">
-          <div class="score-label" data-lt="Jūs" data-en="You">Jūs</div>
-          <div id="yourScore" class="score-value">0</div>
-        </div>
-        <div class="score-separator">:</div>
-        <div class="score-item" id="opponentScoreItem">
-          <div class="score-label" data-lt="Priešininkas" data-en="Opponent">
-            Priešininkas
-          </div>
-          <div id="opponentScore" class="score-value">0</div>
-        </div>
-      </div>
-
-      <!-- Paddle Control Area -->
-      <div id="paddle-control-area" class="paddle-control">
-        <div class="control-label" data-lt="Tempkite raketę" data-en="Drag paddle">
-          Tempkite raketę
-        </div>
-        <div id="draggable-paddle" class="paddle"></div>
-        <div class="control-hint">
-          <span data-lt="↑ Aukštyn" data-en="↑ Up">↑ Aukštyn</span>
-          <span data-lt="↓ Žemyn" data-en="↓ Down">↓ Žemyn</span>
-        </div>
-      </div>
-
-      <!-- Screen Info -->
-      <div class="screen-info">
+  <!-- Match Confirmation Screen -->
+  <div id="confirmationScreen" style="display: none" class="modal confirmation-modal">
+    <div class="modal-content confirmation-content">
+      <h1 class="confirmation-title" data-lt="RASTAS VARŽOVAS!" data-en="MATCH FOUND!">
+        RASTAS VARŽOVAS!
+      </h1>
+      <p class="confirmation-screen">
         <span data-lt="Ekranas" data-en="Screen">Ekranas</span>:
-        <span id="screen" class="screen-number"></span>
+        <span id="confirmScreenNumber" class="screen-highlight">1</span>
+      </p>
+      <div class="confirmation-countdown-container">
+        <div class="confirmation-countdown-circle">
+          <span id="confirmCountdownTimer">10</span>
+        </div>
+        <p class="confirmation-countdown-text" data-lt="sekundės iki išmetimo" data-en="seconds until removal">
+          sekundės iki išmetimo
+        </p>
+      </div>
+      <button id="confirmReadyButton" class="confirm-ready-button" data-lt="PRADĖTI ŽAISTI" data-en="START PLAYING">
+        PRADĖTI ŽAISTI
+      </button>
+      <p class="confirmation-warning" data-lt="Patvirtinkite, kad esate pasiruošę!" data-en="Confirm you are ready!">
+        Patvirtinkite, kad esate pasiruošę!
+      </p>
+    </div>
+  </div>
+
+  <!-- Winner Screen -->
+  <div id="winnerScreen" style="display: none" class="modal winner-modal">
+    <div class="modal-content winner-content">
+      <div class="winner-icon">🏆</div>
+      <h1 class="winner-title" data-lt="LAIMĖJOTE!" data-en="YOU WON!">
+        LAIMĖJOTE!
+      </h1>
+      <p class="winner-score">
+        <span data-lt="Taškai" data-en="Score">Taškai</span>:
+        <span id="winnerFinalScore">0</span>
+      </p>
+      <div class="winner-waiting">
+        <div class="waiting-spinner"></div>
+        <p data-lt="Laukiamas kitas žaidėjas..." data-en="Waiting for next player...">
+          Laukiamas kitas žaidėjas...
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loser Screen -->
+  <div id="loserScreen" style="display: none" class="modal loser-modal">
+    <div class="modal-content loser-content">
+      <div class="loser-icon">😢</div>
+      <h1 class="loser-title" data-lt="PRALAIMĖJOTE" data-en="YOU LOST">
+        PRALAIMĖJOTE
+      </h1>
+      <p class="loser-score">
+        <span data-lt="Taškai" data-en="Score">Taškai</span>:
+        <span id="loserFinalScore">0</span>
+      </p>
+      <div class="loser-queue-info">
+        <p data-lt="Norite žaisti dar kartą?" data-en="Play again?">
+          Norite žaisti dar kartą?
+        </p>
+        <p class="loser-countdown" style="font-size: 0.9em; margin-bottom: 15px; opacity: 0.8;">
+          <span data-lt="Grįžtama į pradžią už" data-en="Returning to start in">Grįžtama į pradžią už</span>
+          <span id="loserCountdownTimer">5</span>s
+        </p>
+        <button id="playButton" class="play-button" data-lt="ŽAISTI IŠ NAUJO" data-en="PLAY AGAIN">
+          ŽAISTI IŠ NAUJO
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div class="game-elements" style="display: none">
+    <!-- Score Display -->
+    <div class="score-header">
+      <div class="score-item" id="yourScoreItem">
+        <div class="score-label" data-lt="Jūs" data-en="You">Jūs</div>
+        <div id="yourScore" class="score-value">0</div>
+      </div>
+      <div class="score-separator">:</div>
+      <div class="score-item" id="opponentScoreItem">
+        <div class="score-label" data-lt="Priešininkas" data-en="Opponent">
+          Priešininkas
+        </div>
+        <div id="opponentScore" class="score-value">0</div>
       </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script type="module" src="play.js?v=6"></script>
-  </body>
+    <!-- Paddle Control Area -->
+    <div id="paddle-control-area" class="paddle-control">
+      <div class="control-label" data-lt="Tempkite raketę" data-en="Drag paddle">
+        Tempkite raketę
+      </div>
+      <div id="draggable-paddle" class="paddle"></div>
+      <div class="control-hint">
+        <span data-lt="↑ Aukštyn" data-en="↑ Up">↑ Aukštyn</span>
+        <span data-lt="↓ Žemyn" data-en="↓ Down">↓ Žemyn</span>
+      </div>
+    </div>
+
+    <!-- Screen Info -->
+    <div class="screen-info">
+      <span data-lt="Ekranas" data-en="Screen">Ekranas</span>:
+      <span id="screen" class="screen-number"></span>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="play.js?v=6"></script>
+</body>
+
 </html>

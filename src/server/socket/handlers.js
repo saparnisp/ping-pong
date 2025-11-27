@@ -362,8 +362,31 @@ function tryMatchPlayers() {
 
     if (!winnerScreenSocketId) {
       console.error(`   ❌ CRITICAL: Winner ${winnerMainSocketId} has no screen session! Cannot rematch.`);
-      // Consider handling this as a forfeit or error state
-      // For now, just return and maybe cleanup
+
+      // FIX: Handle this gracefully
+      // 1. Return challenger to queue (at the front)
+      addToQueue(challengerMainSocketId);
+      console.log(`   ➕ Returned challenger ${challengerMainSocketId} to queue`);
+
+      // 2. Remove the zombie winner from the game/queue to prevent blocking
+      // We need to find which game they are in and clear it
+      const game = getGameForScreen(screenId);
+      if (game) {
+        console.log(`   🗑️ Clearing zombie winner from screen ${screenId}`);
+        // Clear the winnerId so the screen becomes available or waits for new players
+        game.winnerId = null;
+        // Also clear the player slot
+        if (game.player1Id === winnerMainSocketId) game.player1Id = null;
+        if (game.player2Id === winnerMainSocketId) game.player2Id = null;
+
+        // If both empty, clear game completely
+        if (!game.player1Id && !game.player2Id) {
+          clearScreen(screenId);
+        }
+      }
+
+      // 3. Try matching again immediately
+      setTimeout(tryMatchPlayers, 100);
       return;
     }
 
@@ -1214,17 +1237,52 @@ function cancelMatchConfirmation(matchId, reason) {
     io.to(match.player2Id).emit("matchCancelled", { reason: message });
   }
 
-  // Return both players to queue (they should already be removed when match was created)
-  // For rematch, only challenger needs to be added back
+  // Return ONLY CONFIRMED players to queue
+  // Unconfirmed players are dropped (zombies or AFK)
+
   if (match.isRematch) {
+    // Rematch logic
     const challengerId = match.winnerPosition === 1 ? match.player2Id : match.player1Id;
-    addToQueue(challengerId);
-    console.log(`  ➕ Returned challenger ${challengerId} to queue`);
+    const winnerId = match.winnerPosition === 1 ? match.player1Id : match.player2Id;
+
+    // Check challenger confirmation (winner is already "confirmed" by being there, but check if they are the cause)
+    // Actually, for rematch, we only really care if challenger confirmed. 
+    // If winner disconnected, that's handled elsewhere usually, but if they failed to respond to some check...
+
+    // In current logic, we only track player1Confirmed/player2Confirmed
+    // For rematch, we map these based on positions.
+
+    const challengerConfirmed = match.winnerPosition === 1 ? match.player2Confirmed : match.player1Confirmed;
+
+    if (challengerConfirmed) {
+      addToQueue(challengerId);
+      console.log(`  ➕ Returned confirmed challenger ${challengerId} to queue`);
+    } else {
+      console.log(`  ⛔ Challenger ${challengerId} failed to confirm - dropping from queue`);
+      io.to(challengerId).emit("matchCancelled", { reason: "Nepatvirtinote dalyvavimo - buvote pašalintas iš eilės" });
+    }
+
+    // Winner stays on screen (waiting) unless they were the problem? 
+    // If winner failed to confirm (if we require that), we might want to kick them.
+    // But currently handlePlayerConfirmed checks both.
+
   } else {
-    // New match - return both to queue
-    addToQueue(match.player1Id);
-    addToQueue(match.player2Id);
-    console.log(`  ➕ Returned both players to queue`);
+    // New match - check each player
+    if (match.player1Confirmed) {
+      addToQueue(match.player1Id);
+      console.log(`  ➕ Returned confirmed Player 1 (${match.player1Id}) to queue`);
+    } else {
+      console.log(`  ⛔ Player 1 (${match.player1Id}) failed to confirm - dropping from queue`);
+      io.to(match.player1Id).emit("matchCancelled", { reason: "Nepatvirtinote dalyvavimo - buvote pašalintas iš eilės" });
+    }
+
+    if (match.player2Confirmed) {
+      addToQueue(match.player2Id);
+      console.log(`  ➕ Returned confirmed Player 2 (${match.player2Id}) to queue`);
+    } else {
+      console.log(`  ⛔ Player 2 (${match.player2Id}) failed to confirm - dropping from queue`);
+      io.to(match.player2Id).emit("matchCancelled", { reason: "Nepatvirtinote dalyvavimo - buvote pašalintas iš eilės" });
+    }
   }
 
   // Remove from pending matches

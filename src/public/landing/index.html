@@ -1,49 +1,50 @@
 <!DOCTYPE html>
 <html lang="lt">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/x-icon" href="../assets/favicon.ico" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <title>Šviesų Festivalis</title>
-    <link rel="stylesheet" href="landing/style.css" />
-  </head>
-  <body>
-    <div class="background-effects"></div>
-    <button id="language-switcher">EN</button>
 
-    <div class="content-wrapper">
-      <h1>
-        <img src="../assets/logo.png" alt="Šviesų Festivalis" width="240"/>
-      </h1>
-      <h2 data-lt="PING PONG" data-en="PING PONG">PING PONG</h2>
-      <p
-        class="instruction"
-        data-lt="Prisijunkite prie žaidimo ir laukite savo eilės"
-        data-en="Join the game and wait for your turn"
-      >
-        Prisijunkite prie žaidimo ir laukite savo eilės
-      </p>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/x-icon" href="../assets/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>Šviesų Festivalis</title>
+  <link rel="stylesheet" href="landing/style.css" />
+</head>
 
-      <div id="queue-length" class="queue-info" data-lt="Žaidėjų eilėje: 0" data-en="Players in queue: 0">
-        Žaidėjų eilėje: 0
+<body>
+  <div class="background-effects"></div>
+  <button id="language-switcher">EN</button>
+
+  <div class="content-wrapper">
+    <header class="main-header">
+      <div class="logo-container">
+        <img src="../assets/logo.png" alt="Šviesų Festivalis" class="main-logo" />
+      </div>
+      <h2 class="subtitle" data-lt="PING PONG" data-en="PING PONG">PING PONG</h2>
+    </header>
+
+    <main class="main-content">
+      <div class="status-card">
+        <div id="queue-length" class="queue-info" data-lt="Žaidėjų eilėje: 0" data-en="Players in queue: 0">
+          Žaidėjų eilėje: 0
+        </div>
+        <p class="instruction" data-lt="Prisijunkite prie žaidimo ir laukite savo eilės"
+          data-en="Join the game and wait for your turn">
+          Prisijunkite prie žaidimo ir laukite savo eilės
+        </p>
       </div>
 
-      <div id="screens-status" class="screens-container"></div>
-
-      <div class="button-container">
-        <a href="/play" class="menu-button play-button" data-lt="ŽAISTI" data-en="PLAY">
-          ŽAISTI
-        </a>
-        <a href="/scores" class="menu-button scores-button" data-lt="REZULTATAI" data-en="SCORES">
-          REZULTATAI
+      <div class="action-area">
+        <a href="/play" class="play-button" data-lt="ŽAISTI" data-en="PLAY">
+          <span class="play-icon">▶</span>
+          <span class="play-text">ŽAISTI</span>
         </a>
       </div>
-    </div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script type="module" src="landing/landing.js"></script>
-  </body>
+
+      <div id="screens-status" class="screens-grid"></div>
+    </main>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="landing/landing.js"></script>
+</body>
+
 </html>
