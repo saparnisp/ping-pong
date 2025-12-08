@@ -89,7 +89,11 @@ function scaleY(y) {
 
 function scaleSize(size) {
   if (!PONG_CONFIG) return size;
-  return (size / PONG_CONFIG.CANVAS_WIDTH) * canvas.width;
+  // Use the smaller scale factor to maintain aspect ratio
+  const scaleX = canvas.width / PONG_CONFIG.CANVAS_WIDTH;
+  const scaleY = canvas.height / PONG_CONFIG.CANVAS_HEIGHT;
+  const scale = Math.min(scaleX, scaleY);
+  return size * scale;
 }
 
 /**
@@ -303,8 +307,10 @@ function render() {
   }
 
   if (gameState.player2) {
+    // Right paddle position: from right edge, accounting for paddle width
+    const rightPaddleX = PONG_CONFIG.CANVAS_WIDTH - PONG_CONFIG.PADDLE_OFFSET - PONG_CONFIG.PADDLE_WIDTH;
     drawPaddle(
-      PONG_CONFIG.CANVAS_WIDTH - PONG_CONFIG.PADDLE_OFFSET - PONG_CONFIG.PADDLE_WIDTH,
+      rightPaddleX,
       gameState.player2.paddleY,
       PONG_CONFIG.PLAYER2_COLOR
     );
