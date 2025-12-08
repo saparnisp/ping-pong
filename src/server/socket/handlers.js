@@ -32,6 +32,7 @@ import {
   clearQueue,
   clearAllGames,
   createNewGame as queueCreateNewGame,
+  SCREEN_IDS,
 } from "../game/queue.js";
 import { PONG_CONFIG, RECONNECT_WAIT } from "../../config.js";
 import {
@@ -519,7 +520,6 @@ function handleDisplayConnect(socket) {
     clearAllGames();
 
     // Clear all game states
-    const SCREEN_IDS = ["display_1", "display_2", "display_3"];
     SCREEN_IDS.forEach((id) => {
       clearGame(id);
       clearGameLoop(id);
@@ -1311,8 +1311,6 @@ const setup = (server) => {
   });
 
   // Create namespaces for each screen
-  const SCREEN_IDS = ["display_1", "display_2", "display_3"];
-
   SCREEN_IDS.forEach((screenId) => {
     const nsp = io.of(`/${screenId}`);
 

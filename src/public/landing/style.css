@@ -220,10 +220,10 @@ body {
   text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
 }
 
-/* Screens Grid */
+/* Screens Grid - 4x3 layout */
 .screens-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   margin-bottom: 20px;
 }
@@ -253,7 +253,20 @@ body {
 /* Status Colors (overriding JS inline styles if possible, but JS sets inline style color) */
 /* We can force colors if we want, but JS logic is fine. */
 
-@media (min-width: 768px) {
+/* Responsive grid for mobile */
+@media (max-width: 480px) {
+  .screens-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .screens-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 769px) {
   /* Ensure it looks okay on desktop too, just centered mobile view */
   body {
     align-items: center;
@@ -268,5 +281,10 @@ body {
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     background: rgba(0,0,0,0.2);
     margin: 40px auto;
+    max-width: 1200px; /* Wider for 4 columns */
+  }
+  
+  .screens-grid {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
