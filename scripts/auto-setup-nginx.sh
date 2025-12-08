@@ -18,6 +18,27 @@ if [ ! -f "$CONFIG_FILE" ]; then
     exit 1
 fi
 
+# Įdiegti nginx konfigūraciją
+echo "🔧 Įdiegiama nginx konfigūracija..."
+ssh "$VPS_USER@$VPS_IP" << 'EOF'
+    # Įdiegti nginx jei nėra
+    if ! command -v nginx &> /dev/null; then
+        echo "📦 Įdiegiamas nginx..."
+        apt update && apt install -y nginx
+    fi
+
+    # Sukurti katalogus jei nėra
+    mkdir -p /etc/nginx/sites-available
+    mkdir -p /etc/nginx/sites-enabled
+    echo "✅ Katalogai sukurti"
+EOF
+
+if [ $? -ne 0 ]; then
+    echo "❌ Nepavyko prisijungti prie VPS"
+    echo "💡 Patikrinkite SSH prieigą: ssh $VPS_USER@$VPS_IP"
+    exit 1
+fi
+
 # Nukopijuoti config failą
 echo "📤 Kopijuojamas nginx config..."
 scp "$CONFIG_FILE" "$VPS_USER@$VPS_IP:$REMOTE_CONFIG"
@@ -31,13 +52,8 @@ fi
 echo "✅ Config failas nukopijuotas"
 
 # Įdiegti nginx konfigūraciją
-echo "🔧 Įdiegiama nginx konfigūracija..."
+echo "🔧 Konfigūruojamas nginx..."
 ssh "$VPS_USER@$VPS_IP" << 'EOF'
-    # Įdiegti nginx jei nėra
-    if ! command -v nginx &> /dev/null; then
-        echo "📦 Įdiegiamas nginx..."
-        apt update && apt install -y nginx
-    fi
 
     # Įjungti site
     ln -sf /etc/nginx/sites-available/pingpong.spensor.cloud /etc/nginx/sites-enabled/pingpong.spensor.cloud
