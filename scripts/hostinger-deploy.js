@@ -120,7 +120,8 @@ async function createProject(useGitHub = false) {
     console.log(`📦 Naudojamas GitHub repository: ${GITHUB_REPO_URL}`);
     console.log(`🌿 Branch: ${GITHUB_BRANCH}`);
     // Try using raw GitHub URL for specific branch
-    const rawUrl = `https://raw.githubusercontent.com/saparnisp/blokeliai_final/${GITHUB_BRANCH}/docker-compose.yml`;
+    const repoName = GITHUB_REPO_URL.replace('https://github.com/', '');
+    const rawUrl = `https://raw.githubusercontent.com/${repoName}/${GITHUB_BRANCH}/docker-compose.yml`;
     console.log(`📄 Raw URL: ${rawUrl}`);
     content = rawUrl; // Use raw URL for specific branch
   } else {
