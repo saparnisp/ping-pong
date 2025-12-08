@@ -3,6 +3,9 @@ FROM node:22.13.0-slim
 # Create app directory and set ownership
 WORKDIR /app
 
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 # Add non root user
 RUN groupadd -r nodejs && \
     useradd -r -g nodejs -s /bin/bash nodejs && \
