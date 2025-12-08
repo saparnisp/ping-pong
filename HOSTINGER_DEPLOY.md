@@ -242,6 +242,70 @@ const GITHUB_REPO_URL = 'https://github.com/saparnisp/ping-pong';
 const GITHUB_BRANCH = 'main';
 ```
 
+## Subdomeno Nustatymas
+
+### DNS Konfigūracija
+
+Subdomenas `pingpong.spensor.cloud` jau sukonfigūruotas:
+- **DNS A įrašas:** `pingpong.spensor.cloud` → `72.62.1.133` (VPS IP)
+- **TTL:** 300 sekundžių
+
+### Nginx Reverse Proxy
+
+Kad subdomenas veiktų, reikia nginx reverse proxy VPS serveryje:
+
+1. **Prisijunkite prie VPS:**
+   ```bash
+   ssh root@72.62.1.133
+   ```
+
+2. **Įdiekite nginx (jei nėra):**
+   ```bash
+   apt update && apt install -y nginx
+   ```
+
+3. **Nukopijuokite nginx konfigūraciją:**
+   ```bash
+   # Iš projekto katalogo
+   scp config/pingpong.spensor.cloud root@72.62.1.133:/etc/nginx/sites-available/
+   ```
+
+4. **Arba naudokite setup skriptą:**
+   ```bash
+   # Iš projekto katalogo
+   scp -r config/ scripts/setup-nginx-subdomain.sh root@72.62.1.133:/tmp/
+   ssh root@72.62.1.133 "cd /tmp && bash setup-nginx-subdomain.sh"
+   ```
+
+5. **Patikrinkite nginx:**
+   ```bash
+   nginx -t
+   systemctl reload nginx
+   ```
+
+### Nginx Konfigūracija
+
+Nginx konfigūracija (`config/pingpong.spensor.cloud`):
+- **Port:** 80 (HTTP)
+- **Server name:** `pingpong.spensor.cloud`
+- **Proxy:** `http://localhost:10000` (Docker container)
+- **WebSocket support:** Įjungtas
+
+### SSL/HTTPS (Rekomenduojama)
+
+Kad naudotumėte HTTPS, įdiekite SSL sertifikatą:
+
+```bash
+# Prisijunkite prie VPS
+ssh root@72.62.1.133
+
+# Įdiekite certbot
+apt install -y certbot python3-certbot-nginx
+
+# Gauti SSL sertifikatą
+certbot --nginx -d pingpong.spensor.cloud --non-interactive --agree-tos --email your-email@example.com
+```
+
 ## Deployment Workflow
 
 1. **Kodo Pakeitimai**
@@ -259,6 +323,12 @@ const GITHUB_BRANCH = 'main';
 3. **Statuso Tikrinimas**
    ```bash
    node scripts/check-status.js
+   ```
+
+4. **Patikrinti Subdomeną**
+   ```bash
+   curl http://pingpong.spensor.cloud
+   # Arba atidarykite naršyklėje: http://pingpong.spensor.cloud
    ```
 
 ## Saugumas
