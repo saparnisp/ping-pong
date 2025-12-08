@@ -44,12 +44,15 @@ function updateScreenStatuses(data) {
     queueLengthEl.style.display = "none";
   }
 
-  // Update screen statuses
+  // Update screen statuses - show only first 3 screens
   const screensContainer = document.getElementById("screens-status");
   if (screensContainer) {
     screensContainer.innerHTML = "";
 
-    screens.forEach((screen) => {
+    // Filter to show only first 3 screens
+    const screensToShow = screens.slice(0, 3);
+    
+    screensToShow.forEach((screen) => {
       // Create clickable card
       const screenLink = document.createElement("a");
       screenLink.className = "screen-status-card";
