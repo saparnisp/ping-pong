@@ -1,13 +1,22 @@
 #!/bin/bash
 
-# 502 Bad Gateway debug skriptas
-VPS_IP="72.62.1.133"
-VPS_USER="root"
+# Load environment variables
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/load-env.sh"
+
+# Build SSH command
+if [ -n "$SSH_KEY_PATH" ] && [ -f "$SSH_KEY_PATH" ]; then
+    SSH_CMD="ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no"
+elif [ -n "$VPS_PASSWORD" ] && command -v sshpass &> /dev/null; then
+    SSH_CMD="sshpass -p '$VPS_PASSWORD' ssh -o StrictHostKeyChecking=no"
+else
+    SSH_CMD="ssh -o StrictHostKeyChecking=no"
+fi
 
 echo "🔍 502 Bad Gateway debug..."
 echo ""
 
-ssh "$VPS_USER@$VPS_IP" << 'DEBUG'
+$SSH_CMD "$VPS_USER@$VPS_IP" bash << 'DEBUG'
     echo "1. Docker konteineriai:"
     docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "NAME|blokeliai|10000"
     echo ""

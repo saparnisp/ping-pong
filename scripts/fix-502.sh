@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# 502 Bad Gateway sprendimas
-VPS_IP="72.62.1.133"
-VPS_USER="root"
+# Load environment variables
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/load-env.sh"
 
 echo "🔧 502 Bad Gateway sprendimas..."
 echo ""
@@ -10,7 +10,11 @@ echo ""
 echo "📋 Instrukcijos rankiniam sprendimui:"
 echo ""
 echo "1. Prisijunkite prie VPS:"
-echo "   ssh $VPS_USER@$VPS_IP"
+if [ -n "$SSH_KEY_PATH" ] && [ -f "$SSH_KEY_PATH" ]; then
+    echo "   ssh -i $SSH_KEY_PATH $VPS_USER@$VPS_IP"
+else
+    echo "   ssh $VPS_USER@$VPS_IP"
+fi
 echo ""
 echo "2. Patikrinkite Docker konteinerį:"
 echo "   docker ps | grep blokeliai"

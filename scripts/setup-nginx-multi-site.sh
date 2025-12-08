@@ -1,14 +1,33 @@
 #!/bin/bash
 
-# Nginx multi-site setup - abu projektai
-VPS_IP="72.62.1.133"
-VPS_USER="root"
+# Load environment variables
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/load-env.sh"
 
 echo "🔧 Nginx multi-site setup..."
 echo "📡 VPS: $VPS_USER@$VPS_IP"
 echo ""
 
-ssh "$VPS_USER@$VPS_IP" << 'NGINX_SETUP'
+# Check if sshpass is needed
+if [ -n "$VPS_PASSWORD" ] && ! command -v sshpass &> /dev/null; then
+    echo "📦 Įdiegiamas sshpass (reikalingas password autentifikacijai)..."
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        brew install hudochenko/sshpass/sshpass 2>/dev/null || echo "⚠️  Instaliuokite: brew install hudochenko/sshpass/sshpass"
+    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        sudo apt-get install -y sshpass 2>/dev/null || sudo yum install -y sshpass 2>/dev/null || echo "⚠️  Įdiekite sshpass rankiniu būdu"
+    fi
+fi
+
+# Build SSH command
+if [ -n "$SSH_KEY_PATH" ] && [ -f "$SSH_KEY_PATH" ]; then
+    SSH_CMD="ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no"
+elif [ -n "$VPS_PASSWORD" ] && command -v sshpass &> /dev/null; then
+    SSH_CMD="sshpass -p '$VPS_PASSWORD' ssh -o StrictHostKeyChecking=no"
+else
+    SSH_CMD="ssh -o StrictHostKeyChecking=no"
+fi
+
+$SSH_CMD "$VPS_USER@$VPS_IP" bash << 'NGINX_SETUP'
     # Įdiegti nginx jei nėra
     if ! command -v nginx &> /dev/null; then
         echo "📦 Įdiegiamas nginx..."

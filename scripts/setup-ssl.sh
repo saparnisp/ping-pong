@@ -1,8 +1,27 @@
 #!/bin/bash
 
-# SSL sertifikatų įdiegimas su Let's Encrypt
-VPS_IP="72.62.1.133"
-VPS_USER="root"
+# Load environment variables
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/load-env.sh"
+
+# Check if sshpass is needed
+if [ -n "$VPS_PASSWORD" ] && ! command -v sshpass &> /dev/null; then
+    echo "📦 Įdiegiamas sshpass..."
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        brew install hudochenko/sshpass/sshpass 2>/dev/null || echo "⚠️  Instaliuokite: brew install hudochenko/sshpass/sshpass"
+    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        sudo apt-get install -y sshpass 2>/dev/null || sudo yum install -y sshpass 2>/dev/null || echo "⚠️  Įdiekite sshpass rankiniu būdu"
+    fi
+fi
+
+# Build SSH command
+if [ -n "$SSH_KEY_PATH" ] && [ -f "$SSH_KEY_PATH" ]; then
+    SSH_CMD="ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no"
+elif [ -n "$VPS_PASSWORD" ] && command -v sshpass &> /dev/null; then
+    SSH_CMD="sshpass -p '$VPS_PASSWORD' ssh -o StrictHostKeyChecking=no"
+else
+    SSH_CMD="ssh -o StrictHostKeyChecking=no"
+fi
 
 # Patikrinti, ar pateiktas email
 if [ -z "$1" ]; then
@@ -18,7 +37,7 @@ echo "📧 Email: $EMAIL"
 echo "📡 VPS: $VPS_USER@$VPS_IP"
 echo ""
 
-ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 "$VPS_USER@$VPS_IP" bash << 'SSL_SETUP'
+$SSH_CMD -o ConnectTimeout=10 "$VPS_USER@$VPS_IP" bash << 'SSL_SETUP'
     # Įdiegti certbot jei nėra
     if ! command -v certbot &> /dev/null; then
         echo "📦 Įdiegiamas certbot..."
