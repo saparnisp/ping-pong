@@ -125,10 +125,35 @@ EOF
 
     sleep 2
 
+    # Patikrinti, ar blokeliai-app veikia
+    echo "🔍 Tikrinamas blokeliai-app konteineris..."
+    if docker ps | grep -q blokeliai-app; then
+        echo "✅ blokeliai-app konteineris veikia"
+        # Patikrinti, ar aplikacija atsako
+        sleep 2
+        if curl -f http://localhost:10000 > /dev/null 2>&1; then
+            echo "✅ Aplikacija atsako port 10000"
+        else
+            echo "⚠️  Aplikacija neatsako port 10000 - gali būti 502 klaida"
+            echo "   Patikrinkite: docker logs blokeliai-app"
+        fi
+    else
+        echo "⚠️  blokeliai-app konteineris neveikia!"
+        echo "   Paleiskite: docker start blokeliai-app"
+    fi
+
     # Paleisti nginx
     systemctl start nginx
     systemctl enable nginx
     echo "✅ Nginx paleistas"
+    
+    # Patikrinti nginx statusą
+    sleep 1
+    if systemctl is-active --quiet nginx; then
+        echo "✅ Nginx veikia"
+    else
+        echo "❌ Nginx neveikia - patikrinkite: systemctl status nginx"
+    fi
 NGINX_SETUP
 
 if [ $? -eq 0 ]; then
