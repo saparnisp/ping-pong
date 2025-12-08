@@ -7,7 +7,6 @@
   "scripts": {
     "start": "NODE_ENV=production node src/index.js",
     "dev": "nodemon",
-    "deploy": "scripts/deploy.sh",
     "deploy:hostinger": "node scripts/hostinger-deploy.js"
   },
   "engines": {
