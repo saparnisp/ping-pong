@@ -4,19 +4,21 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/load-env.sh"
 
-# Build SSH command
-if [ -n "$SSH_KEY_PATH" ] && [ -f "$SSH_KEY_PATH" ]; then
-    SSH_CMD="ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no"
-elif [ -n "$VPS_PASSWORD" ] && command -v sshpass &> /dev/null; then
-    SSH_CMD="sshpass -p '$VPS_PASSWORD' ssh -o StrictHostKeyChecking=no"
-else
-    SSH_CMD="ssh -o StrictHostKeyChecking=no"
-fi
-
 echo "🔍 502 Bad Gateway debug..."
 echo ""
 
-$SSH_CMD "$VPS_USER@$VPS_IP" bash << 'DEBUG'
+# Build SSH command prefix
+if [ -n "$SSH_KEY_PATH" ] && [ -f "$SSH_KEY_PATH" ]; then
+    SSH_PREFIX="ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no"
+elif [ -n "$VPS_PASSWORD" ] && command -v sshpass &> /dev/null; then
+    # Use sshpass with proper quoting
+    SSH_PREFIX="sshpass -p \"$VPS_PASSWORD\" ssh -o StrictHostKeyChecking=no"
+else
+    SSH_PREFIX="ssh -o StrictHostKeyChecking=no"
+fi
+
+# Execute SSH command
+eval "$SSH_PREFIX \"$VPS_USER@$VPS_IP\" bash" << 'DEBUG'
     echo "1. Docker konteineriai:"
     docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "NAME|blokeliai|10000"
     echo ""
@@ -44,4 +46,3 @@ $SSH_CMD "$VPS_USER@$VPS_IP" bash << 'DEBUG'
     echo "7. Blokeliai-app konteinerio logai (paskutinės 10 eilučių):"
     docker logs --tail 10 blokeliai-app 2>&1 || echo "Konteineris nerastas"
 DEBUG
-

@@ -18,16 +18,16 @@ if [ -n "$VPS_PASSWORD" ] && ! command -v sshpass &> /dev/null; then
     fi
 fi
 
-# Build SSH command
+# Build SSH command prefix
 if [ -n "$SSH_KEY_PATH" ] && [ -f "$SSH_KEY_PATH" ]; then
-    SSH_CMD="ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no"
+    SSH_PREFIX="ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no"
 elif [ -n "$VPS_PASSWORD" ] && command -v sshpass &> /dev/null; then
-    SSH_CMD="sshpass -p '$VPS_PASSWORD' ssh -o StrictHostKeyChecking=no"
+    SSH_PREFIX="sshpass -p \"$VPS_PASSWORD\" ssh -o StrictHostKeyChecking=no"
 else
-    SSH_CMD="ssh -o StrictHostKeyChecking=no"
+    SSH_PREFIX="ssh -o StrictHostKeyChecking=no"
 fi
 
-$SSH_CMD "$VPS_USER@$VPS_IP" bash << 'NGINX_SETUP'
+eval "$SSH_PREFIX \"$VPS_USER@$VPS_IP\" bash" << 'NGINX_SETUP'
     # Įdiegti nginx jei nėra
     if ! command -v nginx &> /dev/null; then
         echo "📦 Įdiegiamas nginx..."
