@@ -220,10 +220,10 @@ body {
   text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
 }
 
-/* Screens Grid - 4x3 layout */
+/* Screens Grid */
 .screens-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   margin-bottom: 20px;
 }
