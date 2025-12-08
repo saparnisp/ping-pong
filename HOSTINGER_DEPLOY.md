@@ -19,20 +19,31 @@
 2. Sukurkite naują API token
 3. Nukopijuokite token
 
-### 2. Nustatyti API Token
+### 2. Nustatyti API Token ir SSH konfigūraciją
 
 Sukurkite `.env` failą projekto šakniniame kataloge:
 
 ```bash
 # .env
 HOSTINGER_API_TOKEN=jūsų_api_token_čia
+
+# SSH Configuration
+VPS_IP=72.62.1.133
+VPS_USER=root
+VPS_PASSWORD=jūsų_ssh_slaptažodis
+# Arba naudokite SSH key (rekomenduojama):
+# SSH_KEY_PATH=~/.ssh/id_rsa
 ```
 
-Arba nustatykite kaip environment variable:
+**SSH autentifikacija:**
 
-```bash
-export HOSTINGER_API_TOKEN="jūsų_api_token_čia"
-```
+Yra du būdai:
+1. **SSH Password** - nustatykite `VPS_PASSWORD` `.env` faile
+   - Reikės `sshpass`: `brew install hudochenko/sshpass/sshpass` (macOS) arba `apt install sshpass` (Linux)
+
+2. **SSH Key** (rekomenduojama) - nustatykite `SSH_KEY_PATH` `.env` faile
+   - Sukurkite SSH key: `ssh-keygen -t rsa -b 4096`
+   - Nukopijuokite į VPS: `ssh-copy-id -i ~/.ssh/id_rsa.pub root@72.62.1.133`
 
 ### 3. Patikrinti VPS ID
 
