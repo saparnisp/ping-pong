@@ -1,8 +1,25 @@
 # Blokeliai - Multiplayer Game Deployment Guide
 
-## Quick Deployment
+## Deployment Methods
 
-❗️ This is the way to deploy now
+### 🐳 Hostinger Docker Deployment (Recommended)
+
+Automatinis deployinimas per Hostinger VPS Docker Manager API.
+
+📖 **Dokumentacija:** [HOSTINGER_DEPLOY.md](./HOSTINGER_DEPLOY.md)
+
+**Greitas startas:**
+```bash
+# 1. Nustatykite API token
+export HOSTINGER_API_TOKEN="jūsų_token"
+
+# 2. Deployinkite
+npm run deploy:hostinger
+```
+
+### 📦 SSH Deployment (Legacy)
+
+❗️ This is the way to deploy now (senasis metodas)
 
 ### Setup local key for the remote
 
