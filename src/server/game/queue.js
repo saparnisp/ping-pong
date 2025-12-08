@@ -6,11 +6,10 @@
  */
 
 // Screen queues: { screenId: [playerId, ...] }
-// 4x3 grid = 12 screens
 let screenQueues = {
-  "display_1": [], "display_2": [], "display_3": [], "display_4": [],
-  "display_5": [], "display_6": [], "display_7": [], "display_8": [],
-  "display_9": [], "display_10": [], "display_11": [], "display_12": []
+  "display_1": [],
+  "display_2": [],
+  "display_3": []
 };
 
 // Active games per screen: { screenId: { player1Id, player2Id, winnerId } }
@@ -20,12 +19,8 @@ let activeGames = {};
 // Display sockets per screen
 let displaySockets = {};
 
-// Available screen IDs (configured) - 4x3 grid = 12 screens
-const SCREEN_IDS = [
-  "display_1", "display_2", "display_3", "display_4",
-  "display_5", "display_6", "display_7", "display_8",
-  "display_9", "display_10", "display_11", "display_12"
-];
+// Available screen IDs (configured)
+const SCREEN_IDS = ["display_1", "display_2", "display_3"];
 
 /**
  * Add player to specific screen queue

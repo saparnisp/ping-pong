@@ -59,19 +59,33 @@ function resizeCanvas() {
   const windowAspectRatio = window.innerWidth / window.innerHeight;
 
   if (windowAspectRatio > aspectRatio) {
-    // Window is wider
+    // Window is wider - fit to height
     canvas.height = window.innerHeight;
     canvas.width = canvas.height * aspectRatio;
   } else {
-    // Window is taller
+    // Window is taller - fit to width
     canvas.width = window.innerWidth;
     canvas.height = canvas.width / aspectRatio;
   }
 
+  // Ensure canvas doesn't exceed window bounds
+  if (canvas.width > window.innerWidth) {
+    canvas.width = window.innerWidth;
+    canvas.height = canvas.width / aspectRatio;
+  }
+  if (canvas.height > window.innerHeight) {
+    canvas.height = window.innerHeight;
+    canvas.width = canvas.height * aspectRatio;
+  }
+
   // Center canvas
   canvas.style.position = "absolute";
-  canvas.style.left = `${(window.innerWidth - canvas.width) / 2}px`;
-  canvas.style.top = `${(window.innerHeight - canvas.height) / 2}px`;
+  canvas.style.left = `${Math.max(0, (window.innerWidth - canvas.width) / 2)}px`;
+  canvas.style.top = `${Math.max(0, (window.innerHeight - canvas.height) / 2)}px`;
+  
+  // Ensure canvas is fully visible
+  canvas.style.maxWidth = "100%";
+  canvas.style.maxHeight = "100%";
 }
 
 /**
@@ -132,6 +146,30 @@ function drawNet() {
   ctx.beginPath();
   ctx.moveTo(canvas.width / 2, 0);
   ctx.lineTo(canvas.width / 2, canvas.height);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/**
+ * Draw walls (left and right boundaries)
+ */
+function drawWalls() {
+  ctx.save();
+  ctx.strokeStyle = PONG_CONFIG.NET_COLOR;
+  ctx.lineWidth = scaleSize(3);
+  ctx.setLineDash([]); // Solid lines for walls
+
+  // Left wall - always at x = 0 in canvas coordinates
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, canvas.height);
+  ctx.stroke();
+
+  // Right wall - always at x = canvas.width in canvas coordinates
+  ctx.beginPath();
+  ctx.moveTo(canvas.width, 0);
+  ctx.lineTo(canvas.width, canvas.height);
   ctx.stroke();
 
   ctx.restore();
@@ -288,6 +326,9 @@ function render() {
   // Clear canvas
   ctx.fillStyle = PONG_CONFIG.BACKGROUND_COLOR;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Draw walls (left and right boundaries)
+  drawWalls();
 
   // Draw net
   drawNet();

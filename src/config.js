@@ -22,7 +22,7 @@ export const PONG_CONFIG = {
   // Game settings
   WIN_SCORE: 5,
   SERVE_DELAY: 2000, // 2 seconds after scoring
-  GAME_FPS: 60,
+  GAME_FPS: 30,
 
   // Colors
   PLAYER1_COLOR: "#00FFFF", // Cyan
