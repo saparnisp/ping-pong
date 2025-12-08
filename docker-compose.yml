@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: blokeliai-app
+    restart: unless-stopped
+    ports:
+      - "10000:10000"
+    environment:
+      - NODE_ENV=production
+      - PORT=10000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10000/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    networks:
+      - blokeliai-network
+
+networks:
+  blokeliai-network:
+    driver: bridge
+
