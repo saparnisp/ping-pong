@@ -36,8 +36,8 @@ loadEnvFile();
 const API_BASE_URL = 'https://developers.hostinger.com';
 const VIRTUAL_MACHINE_ID = 1171365; // iš srv1171365.hstgr.cloud
 const PROJECT_NAME = 'blokeliai-app';
-const GITHUB_REPO_URL = 'https://github.com/saparnisp/blokeliai_final'; // GitHub repository URL
-const GITHUB_BRANCH = 'Ping-Pong'; // Branch name
+const GITHUB_REPO_URL = 'https://github.com/saparnisp/ping-pong'; // GitHub repository URL
+const GITHUB_BRANCH = 'main'; // Branch name (main branch in new repo)
 
 // Get API token from environment variable
 const API_TOKEN = process.env.HOSTINGER_API_TOKEN;
