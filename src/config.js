@@ -1,9 +1,10 @@
 export const RECONNECT_WAIT = 10 * 1000; // 10 seconds
 
 // PONG GAME CONFIGURATION
+// 4:3 aspect ratio (1200:900)
 export const PONG_CONFIG = {
   CANVAS_WIDTH: 1200,
-  CANVAS_HEIGHT: 800,
+  CANVAS_HEIGHT: 900,
 
   // Paddle settings
   PADDLE_WIDTH: 15,
