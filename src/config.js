@@ -14,9 +14,9 @@ export const PONG_CONFIG = {
 
   // Ball settings
   BALL_RADIUS: 12,
-  BALL_INITIAL_SPEED: 6,
+  BALL_INITIAL_SPEED: 16,
   BALL_SPEED_INCREMENT: 0.3, // Speed increase per hit
-  BALL_MAX_SPEED: 15,
+  BALL_MAX_SPEED: 30,
   BALL_MIN_ANGLE: 0.2, // Minimum angle to prevent horizontal balls
 
   // Game settings
