@@ -13,8 +13,8 @@ export const PONG_CONFIG = {
   PADDLE_OFFSET: 30, // Distance from edge
 
   // Ball settings
-  BALL_RADIUS: 16,
-  BALL_INITIAL_SPEED: 9,
+  BALL_RADIUS: 15,
+  BALL_INITIAL_SPEED: 10,
   BALL_SPEED_INCREMENT: 0.3, // Speed increase per hit
   BALL_MAX_SPEED: 20,
   BALL_MIN_ANGLE: 0.2, // Minimum angle to prevent horizontal balls
