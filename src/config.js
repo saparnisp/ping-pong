@@ -31,6 +31,8 @@ export const PONG_CONFIG = {
   BACKGROUND_COLOR: "#000000", // Black
   NET_COLOR: "rgba(255,255,255,0.3)", // Semi-transparent white
   GLOW_COLOR: "#FFFFFF",
+  WALL_COLOR: "rgba(255,255,255,0.5)", // Wall/border color
+  WALL_WIDTH: 3, // Wall line width
 
   // Visual effects
   BALL_GLOW: 20,

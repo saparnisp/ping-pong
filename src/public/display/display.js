@@ -152,21 +152,33 @@ function drawNet() {
 }
 
 /**
- * Draw walls (left and right boundaries)
+ * Draw walls (all four boundaries - top, bottom, left, right)
  */
 function drawWalls() {
   ctx.save();
-  ctx.strokeStyle = PONG_CONFIG.NET_COLOR;
-  ctx.lineWidth = scaleSize(3);
+  ctx.strokeStyle = PONG_CONFIG.WALL_COLOR || PONG_CONFIG.NET_COLOR;
+  ctx.lineWidth = scaleSize(PONG_CONFIG.WALL_WIDTH || 3);
   ctx.setLineDash([]); // Solid lines for walls
 
-  // Left wall - always at x = 0 in canvas coordinates
+  // Top wall
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(canvas.width, 0);
+  ctx.stroke();
+
+  // Bottom wall
+  ctx.beginPath();
+  ctx.moveTo(0, canvas.height);
+  ctx.lineTo(canvas.width, canvas.height);
+  ctx.stroke();
+
+  // Left wall
   ctx.beginPath();
   ctx.moveTo(0, 0);
   ctx.lineTo(0, canvas.height);
   ctx.stroke();
 
-  // Right wall - always at x = canvas.width in canvas coordinates
+  // Right wall
   ctx.beginPath();
   ctx.moveTo(canvas.width, 0);
   ctx.lineTo(canvas.width, canvas.height);
