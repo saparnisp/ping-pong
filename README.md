@@ -1,4 +1,4 @@
-# Blokeliai - Multiplayer Game Deployment Guide
+# Ping-pong - Multiplayer Game Deployment Guide
 
 ## Deployment Methods
 
@@ -43,12 +43,12 @@ Quick steps for subsequent deployments:
 
 ```bash
 # 1. Create and upload deployment archive
-mkdir -p /tmp/blokeliai-deploy
-tar -czf /tmp/blokeliai-deploy/deploy.tar.gz --exclude='node_modules' --exclude='.git' .
-scp /tmp/blokeliai-deploy/deploy.tar.gz root@92.112.180.232:/var/www/blokeliai/
+mkdir -p /tmp/ping-pong-deploy
+tar -czf /tmp/ping-pong-deploy/deploy.tar.gz --exclude='node_modules' --exclude='.git' .
+scp /tmp/ping-pong-deploy/deploy.tar.gz root@92.112.180.232:/var/www/ping-pong/
 
 # 2. SSH into server and deploy
-ssh root@92.112.180.232 "cd /var/www/blokeliai && tar -xzf deploy.tar.gz && npm install --production && pm2 restart server"
+ssh root@92.112.180.232 "cd /var/www/ping-pong && tar -xzf deploy.tar.gz && npm install --production && pm2 restart server"
 
 # 3. Verify deployment
 ssh root@92.112.180.232 "pm2 status && systemctl status nginx | grep Active"
@@ -73,25 +73,25 @@ curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
 apt-get install -y nodejs nginx certbot python3-certbot-nginx"
 
 # Create application directory
-ssh root@92.112.180.232 "mkdir -p /var/www/blokeliai"
+ssh root@92.112.180.232 "mkdir -p /var/www/ping-pong"
 ```
 
 ### 3. Application Files Setup
 
 ```bash
 # Create deployment archive
-mkdir -p /tmp/blokeliai-deploy
-tar -czf /tmp/blokeliai-deploy/deploy.tar.gz --exclude='node_modules' --exclude='.git' .
+mkdir -p /tmp/ping-pong-deploy
+tar -czf /tmp/ping-pong-deploy/deploy.tar.gz --exclude='node_modules' --exclude='.git' .
 
 # Upload to server
-scp /tmp/blokeliai-deploy/deploy.tar.gz root@92.112.180.232:/var/www/blokeliai/
+scp /tmp/ping-pong-deploy/deploy.tar.gz root@92.112.180.232:/var/www/ping-pong/
 
 # Extract and install dependencies
-ssh root@92.112.180.232 "cd /var/www/blokeliai && \
+ssh root@92.112.180.232 "cd /var/www/ping-pong && \
 tar -xzf deploy.tar.gz && \
 npm install --production && \
-chown -R root:root /var/www/blokeliai && \
-chmod -R 755 /var/www/blokeliai"
+chown -R root:root /var/www/ping-pong && \
+chmod -R 755 /var/www/ping-pong"
 ```
 
 ### 4. PM2 Setup
@@ -99,7 +99,7 @@ chmod -R 755 /var/www/blokeliai"
 ```bash
 # Install and configure PM2
 ssh root@92.112.180.232 "npm install -g pm2 && \
-cd /var/www/blokeliai && \
+cd /var/www/ping-pong && \
 NODE_ENV=production pm2 start server.js && \
 pm2 save && \
 pm2 startup"
@@ -109,10 +109,10 @@ pm2 startup"
 
 ```bash
 # Create Nginx configuration
-ssh root@92.112.180.232 "yes | cp -rf /var/www/blokeliai/config/blokeliai /etc/nginx/sites-available/blokeliai"
+ssh root@92.112.180.232 "yes | cp -rf /var/www/ping-pong/config/ping-pong /etc/nginx/sites-available/ping-pong"
 
 # Enable site and restart Nginx
-ssh root@92.112.180.232 "ln -sf /etc/nginx/sites-available/blokeliai /etc/nginx/sites-enabled/ && \
+ssh root@92.112.180.232 "ln -sf /etc/nginx/sites-available/ping-pong /etc/nginx/sites-enabled/ && \
 rm -f /etc/nginx/sites-enabled/default && \
 nginx -t && \
 systemctl restart nginx"
@@ -123,7 +123,7 @@ systemctl restart nginx"
 Important application files:
 
 ```
-/var/www/blokeliai/
+/var/www/ping-pong/
 ├── src/
 │   ├── index.js         # Main application entry
 │   ├── server/
@@ -192,8 +192,8 @@ ssh root@92.112.180.232 "tail -f /var/log/nginx/error.log"
 ### 3. Permission Issues:
 
 ```bash
-ssh root@92.112.180.232 "chown -R root:root /var/www/blokeliai && \
-chmod -R 755 /var/www/blokeliai"
+ssh root@92.112.180.232 "chown -R root:root /var/www/ping-pong && \
+chmod -R 755 /var/www/ping-pong"
 ```
 
 ## Adding SSL (When You Have a Domain)
@@ -226,7 +226,7 @@ https://github.com/nvm-sh/nvm
 ### Copy scores file from the prod:
 
 ```bash
-scp root@92.112.180.232:/var/www/blokeliai/scores.json .
+scp root@92.112.180.232:/var/www/ping-pong/scores.json .
 ```
 
 ### Count unique sessions from access logs

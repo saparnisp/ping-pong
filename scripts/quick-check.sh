@@ -19,3 +19,4 @@ echo ""
 # Quick checks
 eval "$SSH_CMD \"$VPS_USER@$VPS_IP\" \"docker ps | grep blokeliai; echo '---'; curl -s http://localhost:10000 | head -1; echo '---'; ls -la /etc/nginx/sites-enabled/ | grep multi\"" 2>&1
 
+

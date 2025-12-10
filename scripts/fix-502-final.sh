@@ -66,3 +66,4 @@ echo ""
 echo "✅ Patikrinimas baigtas!"
 echo "🌐 Patikrinkite: http://pingpong.spensor.cloud"
 
+

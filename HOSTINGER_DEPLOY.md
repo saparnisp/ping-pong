@@ -92,7 +92,7 @@ npm run deploy:hostinger
 ## Projekto Struktūra
 
 ```
-blokeliai_final-2/
+ping-pong/
 ├── docker-compose.yml          # Docker Compose konfigūracija
 ├── Dockerfile                  # Docker image build'inimas
 ├── scripts/

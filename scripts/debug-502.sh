@@ -43,6 +43,6 @@ eval "$SSH_PREFIX \"$VPS_USER@$VPS_IP\" bash" << 'DEBUG'
     systemctl status nginx --no-pager | head -5
     echo ""
     
-    echo "7. Blokeliai-app konteinerio logai (paskutinės 10 eilučių):"
+    echo "7. Ping-pong konteinerio logai (paskutinės 10 eilučių):"
     docker logs --tail 10 blokeliai-app 2>&1 || echo "Konteineris nerastas"
 DEBUG

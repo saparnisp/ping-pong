@@ -42,7 +42,7 @@ eval "$SSH_PREFIX \"$VPS_USER@$VPS_IP\" bash" << 'NGINX_SETUP'
     cat > /etc/nginx/sites-available/multi-site.conf << 'EOF'
 # Nginx konfigūracija abiem projektams
 
-# Ping Pong projektas (blokeliai-app)
+# Ping Pong projektas
 server {
     listen 80;
     server_name pingpong.spensor.cloud;
@@ -144,10 +144,10 @@ EOF
 
     sleep 2
 
-    # Patikrinti, ar blokeliai-app veikia
-    echo "🔍 Tikrinamas blokeliai-app konteineris..."
+    # Patikrinti, ar Ping-pong aplikacija veikia
+    echo "🔍 Tikrinamas Ping-pong konteineris..."
     if docker ps | grep -q blokeliai-app; then
-        echo "✅ blokeliai-app konteineris veikia"
+        echo "✅ Ping-pong konteineris veikia"
         # Patikrinti, ar aplikacija atsako
         sleep 2
         if curl -f http://localhost:10000 > /dev/null 2>&1; then
@@ -157,7 +157,7 @@ EOF
             echo "   Patikrinkite: docker logs blokeliai-app"
         fi
     else
-        echo "⚠️  blokeliai-app konteineris neveikia!"
+        echo "⚠️  Ping-pong konteineris neveikia!"
         echo "   Paleiskite: docker start blokeliai-app"
     fi
 

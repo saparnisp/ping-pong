@@ -157,7 +157,7 @@ async function getProjectStatus() {
 // Main deployment function
 async function deploy() {
   try {
-    console.log('🎮 Blokeliai deployinimas į Hostinger VPS...\n');
+    console.log('🎮 Ping-pong deployinimas į Hostinger VPS...\n');
 
     // Check existing projects
     const projects = await getProjectList();

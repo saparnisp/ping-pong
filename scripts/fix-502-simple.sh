@@ -59,3 +59,4 @@ if [ $? -eq 0 ]; then
     echo "🌐 Patikrinkite: http://pingpong.spensor.cloud"
 fi
 
+
