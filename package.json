@@ -1,7 +1,7 @@
 {
-  "name": "tetris-multiplayer",
+  "name": "ping-pong-multiplayer",
   "version": "1.0.0",
-  "description": "Multiplayer Tetris game",
+  "description": "Multiplayer Ping-pong game",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
